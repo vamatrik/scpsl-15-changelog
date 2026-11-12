@@ -612,7 +612,7 @@ async function boot() {
     await wait(fast ? 20 : 140);
   }
   $('#boot-choose').classList.add('show');
-  setTimeout(() => { beep(880, .09, 'square', .03); setTimeout(() => beep(1320, .16, 'square', .03), 90); }, 900);
+  setTimeout(() => { beep(110, .5, 'sine', .05, 70); }, 1450); setTimeout(() => { beep(880, .1, 'square', .025); setTimeout(() => beep(1320, .22, 'square', .025), 110); }, 2300);
   const f = document.querySelector(`[data-boot="${S.lang}"]`); if (f && !S.booted) f.focus();
 }
 
