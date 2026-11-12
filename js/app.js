@@ -219,14 +219,9 @@ let lastT = performance.now(), lastZoneShown = '';
 function frame(t) {
   const dt = Math.min(.05, (t - lastT) / 1000); lastT = t;
   const k = 1 - Math.pow(.0015, dt);
-  const follow = S.follow && !drag.on && !$('#dossier').classList.contains('open') ? 1 : 0;
-  C.fx += (follow * -C.mx * 110 - C.fx) * k; C.fy += (follow * -C.my * 80 - C.fy) * k;
   C.z += (C.tz - C.z) * k; C.x += (C.tx - C.x) * k; C.y += (C.ty - C.y) * k;
   svg.classList.toggle('lod', C.z > .62);
-  cam.setAttribute('transform', `translate(${(C.x + C.fx).toFixed(2)} ${(C.y + C.fy).toFixed(2)}) scale(${C.z.toFixed(4)})`);
-  const trx = S.follow ? C.my * -2.2 : 0, try_ = S.follow ? C.mx * 3 : 0;
-  C.rx += (trx - C.rx) * k; C.ry += (try_ - C.ry) * k;
-  tilt.style.transform = `rotateX(${C.rx.toFixed(3)}deg) rotateY(${C.ry.toFixed(3)}deg)`;
+  cam.setAttribute('transform', `translate(${C.x.toFixed(2)} ${C.y.toFixed(2)}) scale(${C.z.toFixed(4)})`);
   // HUD: AP regen
   const maxAP = [100, 120, 140, 160, 200][S.tier - 1];
   if (S.booted && S.ap < maxAP) { S.ap = Math.min(maxAP, S.ap + maxAP / 40 * dt); hudAP(); }
@@ -238,10 +233,35 @@ function frame(t) {
   requestAnimationFrame(frame);
 }
 
-/* ---------------- pointer: drag / pinch / hover ---------------- */
+/* ---------------- pointer: 079-style 1:1 mouse look / drag / pinch / hover ---------------- */
 const stage = $('#stage'), tip = $('#tip');
+const ret = document.createElement('div'); ret.id = 'reticle'; document.body.appendChild(ret);
 const drag = { on: false, moved: 0, sx: 0, sy: 0, hub: null, ptrs: new Map(), pinch: 0 };
+const P0 = { x: innerWidth / 2, y: innerHeight / 2, over: false };
+let locked = false;
+const lockCenter = () => [dirW() + (C.W - panelW() - dirW()) / 2, C.H / 2];
+const retXY = () => locked ? lockCenter() : [P0.x, P0.y];
+function placeReticle() {
+  const [x, y] = retXY();
+  ret.style.transform = `translate(${x}px,${y}px)`;
+  ret.classList.toggle('show', S.follow && !isTouch && (locked || P0.over));
+}
+const canLock = () => S.follow && !isTouch && !!stage.requestPointerLock;
+function lockOn() { if (!canLock() || locked) return; try { const p = stage.requestPointerLock(); if (p && p.catch) p.catch(() => {}); } catch {} }
+function lockOff() { if (locked) document.exitPointerLock(); }
+document.addEventListener('pointerlockchange', () => {
+  locked = document.pointerLockElement === stage;
+  document.body.classList.toggle('locked', locked);
+  if (locked && !S.lockHinted) { S.lockHinted = true; toast(T('lockHint')); }
+  placeReticle(); hoverPoint();
+});
+function underReticle() { const [x, y] = retXY(); const el = document.elementFromPoint(x, y); return el && stage.contains(el) ? el : null; }
 stage.addEventListener('pointerdown', e => {
+  if (locked) {
+    const el = underReticle(), h = el && el.closest('.hub');
+    if (h) { lockOff(); openHub(h.dataset.hub); } else sfx.click();
+    return;
+  }
   drag.ptrs.set(e.pointerId, [e.clientX, e.clientY]);
   stage.setPointerCapture(e.pointerId);
   if (drag.ptrs.size === 2) { const [a, b] = [...drag.ptrs.values()]; drag.pinch = Math.hypot(a[0] - b[0], a[1] - b[1]); return; }
@@ -249,7 +269,13 @@ stage.addEventListener('pointerdown', e => {
   drag.hub = e.target.closest && e.target.closest('.hub');
 });
 stage.addEventListener('pointermove', e => {
-  C.mx = e.clientX / C.W * 2 - 1; C.my = e.clientY / C.H * 2 - 1;
+  if (locked) {
+    // the map moves exactly as far as the mouse does — like SCP-079's map
+    const dx = e.movementX || 0, dy = e.movementY || 0;
+    C.tx -= dx; C.ty -= dy; C.x -= dx; C.y -= dy; clampCam(); C.x = C.tx; C.y = C.ty;
+    hoverPoint(); return;
+  }
+  P0.x = e.clientX; P0.y = e.clientY; P0.over = true; placeReticle();
   if (drag.ptrs.has(e.pointerId)) {
     const prev = drag.ptrs.get(e.pointerId); drag.ptrs.set(e.pointerId, [e.clientX, e.clientY]);
     if (drag.ptrs.size === 2) {
@@ -260,9 +286,9 @@ stage.addEventListener('pointermove', e => {
     if (drag.on) {
       const dx = e.clientX - prev[0], dy = e.clientY - prev[1];
       drag.moved += Math.abs(dx) + Math.abs(dy);
-      if (drag.moved > 4) { stage.classList.add('dragging'); C.tx += dx; C.ty += dy; C.x += dx; C.y += dy; clampCam(); hideTip(); }
+      if (drag.moved > 4) { stage.classList.add('dragging'); C.tx += dx; C.ty += dy; clampCam(); C.x = C.tx; C.y = C.ty; hideTip(); }
     }
-  } else hoverAt(e);
+  } else hoverPoint(e.target);
 });
 const endPtr = e => {
   drag.ptrs.delete(e.pointerId);
@@ -270,27 +296,30 @@ const endPtr = e => {
   if (!drag.on) return;
   if (drag.ptrs.size === 0) {
     drag.on = false; stage.classList.remove('dragging');
-    if (drag.moved <= 4 && drag.hub) openHub(drag.hub.dataset.hub);
+    if (drag.moved <= 4) { if (drag.hub) openHub(drag.hub.dataset.hub); else lockOn(); }
   }
 };
 stage.addEventListener('pointerup', endPtr); stage.addEventListener('pointercancel', endPtr);
-stage.addEventListener('pointerleave', () => { C.mx *= .5; C.my *= .5; hideTip(); });
-stage.addEventListener('wheel', e => { e.preventDefault(); zoomAt(e.clientX, e.clientY, Math.exp(-e.deltaY * .0015)); clampCam(); }, { passive: false });
+stage.addEventListener('pointerleave', () => { if (locked) return; P0.over = false; placeReticle(); hideTip(); });
+stage.addEventListener('wheel', e => { e.preventDefault(); const [x, y] = locked ? retXY() : [e.clientX, e.clientY]; zoomAt(x, y, Math.exp(-e.deltaY * .0015)); clampCam(); }, { passive: false });
 let hoverHub = null;
-function hoverAt(e) {
-  const h = e.target.closest && e.target.closest('.hub');
+function hoverPoint(target) {
+  const el = target || underReticle();
+  const [px, py] = retXY();
+  const h = el && el.closest && el.closest('.hub');
   if (h !== hoverHub) { hoverHub = h; if (h) sfx.hover(); }
+  ret.classList.toggle('hot', !!h);
+  const place = () => { tip.style.left = Math.min(px + 18, C.W - 300) + 'px'; tip.style.top = Math.min(py + 18, C.H - tip.offsetHeight - 40) + 'px'; tip.classList.add('show'); };
   if (!h) {
-    const rm = e.target.closest && e.target.closest('[data-room]');
+    const rm = el && el.closest && el.closest('[data-room]');
     if (!rm) return hideTip();
     tip.innerHTML = `<b>${esc(ALIAS[rm.dataset.room][S.lang === 'ru' ? 0 : 1])}</b><span class="dim">${rm.dataset.room} · 14.2.7</span>`;
-    tip.style.left = Math.min(e.clientX + 16, C.W - 300) + 'px'; tip.style.top = (e.clientY + 16) + 'px'; tip.classList.add('show'); return;
+    return place();
   }
   const hub = HUBS.find(x => x.id === h.dataset.hub);
   const n = hub.secs.length, rd = hub.secs.filter(s => S.read.has(s)).length;
-  tip.innerHTML = `<b>${esc(hub.t[S.lang])}</b>${hub.secs.map(s => '· ' + esc(secById[s].t[S.lang])).join('<br>')}<div class="dim" style="margin-top:4px">${rd}/${n} ${T('read')}</div>`;
-  const x = Math.min(e.clientX + 16, C.W - 300), y = Math.min(e.clientY + 16, C.H - tip.offsetHeight - 40);
-  tip.style.left = x + 'px'; tip.style.top = y + 'px'; tip.classList.add('show');
+  tip.innerHTML = `<b>${esc(hub.t[S.lang])}</b>${hub.secs.map(s => '· ' + esc(secById[s].t[S.lang])).join('<br>')}<div class="dim" style="margin-top:4px">${rd}/${n} ${T('read')}${locked ? ' · ' + (S.lang === 'ru' ? 'клик — открыть' : 'click to open') : ''}</div>`;
+  place();
 }
 const hideTip = () => { tip.classList.remove('show'); };
 
@@ -342,7 +371,7 @@ let io = null;
 function openHub(id, secId, opts = {}) {
   const h = HUBS.find(x => x.id === id); if (!h) return;
   const already = S.hub === id;
-  S.hub = id;
+  S.hub = id; lockOff();
   Object.values(hubEls).forEach(e => e.classList.remove('active')); hubEls[id].classList.add('active');
   const z = zoneById[h.zone];
   dos.style.setProperty('--zc', z.color);
@@ -432,7 +461,7 @@ function renderDir() {
   }).join('');
 }
 function toggleDir(force) {
-  const open = force ?? !dir.classList.contains('open');
+  const open = force ?? !dir.classList.contains('open'); if (open) lockOff();
   dir.classList.toggle('open', open); document.body.classList.toggle('dir-open', open);
   if (open && innerWidth <= 820) closeDossier();
   sfx.click();
@@ -478,7 +507,7 @@ function toast(msg, cls = '') {
 }
 function glitch() { document.body.classList.add('glitch'); setTimeout(() => document.body.classList.remove('glitch'), 400); }
 const modal = $('#modal');
-function openModal(html) { $('#modal-body').innerHTML = html; modal.hidden = false; sfx.open(); }
+function openModal(html) { lockOff(); $('#modal-body').innerHTML = html; modal.hidden = false; sfx.open(); }
 const closeModal = () => { if (!modal.hidden) { modal.hidden = true; sfx.close(); } };
 $('#modal-close').onclick = closeModal;
 modal.addEventListener('click', e => { if (e.target === modal) closeModal(); const b = e.target.closest('[data-hub]'); if (b) { closeModal(); openHub(b.dataset.hub); } });
@@ -494,7 +523,7 @@ const showHelp = () => openModal(`<h2>${T('help')}</h2><div class="help">${T('he
 $('#btn-overview').onclick = showOverview; $('#btn-help').onclick = showHelp;
 $('#btn-sound').onclick = () => { S.sound = !S.sound; save(); applySound(); sfx.click(); };
 const applySound = () => $('#btn-sound').classList.toggle('off', !S.sound);
-const applyFollow = () => $('#ab-follow').classList.toggle('on', S.follow);
+const applyFollow = () => { $('#ab-follow').classList.toggle('on', S.follow); document.body.classList.toggle('follow', S.follow && !isTouch); if (!S.follow) lockOff(); placeReticle(); };
 $('#abilities').addEventListener('click', e => {
   const b = e.target.closest('[data-act]'); if (!b) return; sfx.click();
   ({ dir: () => toggleDir(), search: () => { toggleDir(true); setTimeout(() => search.focus(), 50); }, reset: () => { closeDossier(); overview(); }, follow: () => { S.follow = !S.follow; save(); applyFollow(); } })[b.dataset.act]();

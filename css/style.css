@@ -238,3 +238,13 @@ body.glitch #stage{animation:glitch .35s steps(3)}
 .hub .hub-ring{transform-box:fill-box;transform-origin:center}
 .hub .hub-label{font-size:17px}
 .hub:hover .hub-bg,.hub.active .hub-bg{fill:#14262e}
+
+/* ---------- 079 mode reticle ---------- */
+body.follow #stage, body.follow #stage.dragging{cursor:none}
+#reticle{position:fixed;left:0;top:0;z-index:55;pointer-events:none;opacity:0;transition:opacity .15s}
+#reticle.show{opacity:1}
+#reticle::before{content:"";position:absolute;left:-4px;top:-4px;width:8px;height:8px;border-radius:50%;background:var(--amber);box-shadow:0 0 10px var(--amber)}
+#reticle::after{content:"";position:absolute;left:-15px;top:-15px;width:30px;height:30px;border-radius:50%;border:1px solid rgba(255,179,71,.45);transform:scale(.6);opacity:0;transition:transform .2s var(--ease),opacity .2s}
+#reticle.hot::after{transform:scale(1);opacity:1}
+body.locked #reticle::before{background:var(--cyan);box-shadow:0 0 12px var(--cyan)}
+body.locked #reticle::after{border-color:rgba(111,211,255,.5)}
