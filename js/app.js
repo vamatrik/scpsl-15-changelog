@@ -14,9 +14,9 @@ const store = (() => { try { return JSON.parse(localStorage.getItem('scpsl15') |
 const S = {
   lang: store.lang || ((navigator.language || '').startsWith('ru') ? 'ru' : 'en'),
   read: new Set(store.read || []), sound: store.sound !== false, follow: store.follow !== false && !isTouch,
-  ap: 0, tier: 1, hub: null, booted: false, sens: +store.sens || 1
+  ap: 0, tier: 1, hub: null, booted: false, sens: +store.sens || 1, mode: store.mode === 'doc' ? 'doc' : 'map'
 };
-const save = () => { try { localStorage.setItem('scpsl15', JSON.stringify({ lang: S.lang, read: [...S.read], sound: S.sound, follow: S.follow, sens: S.sens })); } catch {} };
+const save = () => { try { localStorage.setItem('scpsl15', JSON.stringify({ lang: S.lang, read: [...S.read], sound: S.sound, follow: S.follow, sens: S.sens, mode: S.mode })); } catch {} };
 const T = k => UI[S.lang][k];
 
 const secById = Object.fromEntries(SECS.map(s => [s.id, s]));
@@ -383,7 +383,7 @@ function openHub(id, secId, opts = {}) {
   $('#dos-count').textContent = `${items} ${T('items')}`;
   $('#dos-chips').innerHTML = h.secs.length > 1 ? h.secs.map(s => `<button data-sec="${s}">${esc(secById[s].t[S.lang])}</button>`).join('') : '';
   const q = opts.q || '';
-  dosBody.innerHTML = memeHTML(h) + h.secs.map(sid => {
+  dosBody.innerHTML = memeHTML(h) + memeImgs(h.id) + h.secs.map(sid => {
     const s = secById[sid];
     return `<section class="sec" id="sec-${sid}" data-sec="${sid}"><h2>${esc(s.t[S.lang])}<button class="lnk" data-copy="${sid}">#link</button></h2>${renderEntries(s.nums, s.cat === 'tech', q)}</section>`;
   }).join('') + `<div class="stamp">${S.lang === 'ru' ? 'ПРОВЕРЕНО // 079' : 'REVIEWED // 079'}</div>`;
@@ -492,6 +492,67 @@ function doSearch() {
     `<button class="res" data-sec="${s.id}" data-entry="${n}"><small>${esc(s.t[S.lang])}</small>${highlight(esc(E[n][S.lang]), q)}</button>`).join('') : `<p class="dim" style="font-size:12px;padding:8px">${T('noresults')}</p>`);
 }
 
+
+/* ---------------- document mode ---------------- */
+const MEMES = window.CL_MEMES || {};
+const memeImgs = hubId => (MEMES[hubId] || []).map(m => `<figure class="meme-img"><img src="${esc(m.src)}" alt="" loading="lazy">${m[S.lang] ? `<figcaption>${esc(m[S.lang])}</figcaption>` : ''}</figure>`).join('');
+const docEl = $('#doc'), docBody = $('#doc-body'), docToc = $('#doc-toc'), docQ = $('#doc-q');
+let docIO = null;
+function buildDoc() {
+  const q = docQ.value.trim(), ql = q.toLowerCase(), useQ = q.length > 1;
+  const hit = n => E[n].ru.toLowerCase().includes(ql) || E[n].en.toLowerCase().includes(ql);
+  const seenHub = new Set(); let total = 0, html = '';
+  if (!useQ) html += `<div class="doc-hero"><h1>${esc(T('title'))}</h1><p>${esc(T('sub'))}<br>${[1, 2, 3].map(n => '· ' + esc(E[n][S.lang])).join('<br>')}</p></div>`;
+  CATS.forEach(c => {
+    let part = '';
+    SECS.filter(s => s.cat === c.id).forEach(s => {
+      const nums = useQ ? s.nums.filter(hit) : s.nums;
+      if (useQ && !nums.length) return;
+      total += nums.filter(n => E[n].k === 'b').length;
+      const hub = hubBySec[s.id]; let extra = '';
+      if (!useQ && hub && !seenHub.has(hub.id)) {
+        seenHub.add(hub.id);
+        extra = `<div class="mini-meme"><svg viewBox="0 0 120 120">${FACES[hub.face] || FACES.crt}</svg><div><b>${esc(hub.joke[S.lang][0])}</b>${esc(hub.joke[S.lang][1])}</div></div>` + memeImgs(hub.id);
+      }
+      part += `<section class="sec" id="d-${s.id}" data-sec="${s.id}"><h2>${esc(s.t[S.lang])}<button class="lnk" data-map="${s.id}">${S.lang === 'ru' ? 'на карте' : 'on map'} ↗</button></h2>${extra}${renderEntries(useQ ? withParents(s, nums) : nums, s.cat === 'tech', useQ ? q : '')}</section>`;
+    });
+    if (part) html += `<div class="doc-cat">${esc(c[S.lang])}</div>` + part;
+  });
+  docBody.innerHTML = html || `<p class="dim">${T('noresults')}</p>`;
+  $('#doc-count').textContent = useQ ? `${total} · ${T('results').toLowerCase()}` : `${E.length - 4} ${T('items')}`;
+  docToc.innerHTML = CATS.map(c => `<div class="cat">${esc(c[S.lang])}</div>` + SECS.filter(s => s.cat === c.id).map(s => `<a href="#doc/${s.id}" data-go="${s.id}" class="${S.read.has(s.id) ? 'read' : ''}"><span class="dot"></span>${esc(s.t[S.lang])}</a>`).join('')).join('');
+  if (docIO) docIO.disconnect();
+  docIO = new IntersectionObserver(es => es.forEach(en => {
+    if (!en.isIntersecting) return; const sid = en.target.dataset.sec; markRead(sid);
+    docToc.querySelectorAll('a').forEach(a => { a.classList.toggle('on', a.dataset.go === sid); if (a.dataset.go === sid) a.classList.add('read'); });
+  }), { root: $('#doc-main'), rootMargin: '0px 0px -60% 0px' });
+  docBody.querySelectorAll('.sec').forEach(x => docIO.observe(x));
+}
+// keep parent bullets of matching sub-bullets so nesting stays readable
+function withParents(s, nums) {
+  const set = new Set(nums), all = s.nums;
+  nums.forEach(n => { let lv = E[n].lv, i = all.indexOf(n); while (lv > 0 && i > 0) { i--; if (E[all[i]].lv < lv) { set.add(all[i]); lv = E[all[i]].lv; } } });
+  return all.filter(n => set.has(n));
+}
+function docGo(sid) { const el = $('#d-' + sid); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+docToc.addEventListener('click', e => { const a = e.target.closest('[data-go]'); if (!a) return; e.preventDefault(); sfx.click(); if (docQ.value) { docQ.value = ''; buildDoc(); } docGo(a.dataset.go); setHashRaw('#doc/' + a.dataset.go); });
+docBody.addEventListener('click', e => {
+  const b = e.target.closest('[data-map]'); if (!b) return;
+  const sid = b.dataset.map; setMode('map'); setTimeout(() => openHub(hubBySec[sid].id, sid), 350);
+});
+let dqT; docQ.addEventListener('input', () => { clearTimeout(dqT); dqT = setTimeout(buildDoc, 140); });
+function setHashRaw(h) { try { history.replaceState(null, '', h); } catch {} }
+function setMode(m) {
+  S.mode = m; save();
+  const doc = m === 'doc';
+  document.body.classList.toggle('doc-mode', doc); docEl.hidden = !doc;
+  $('#mode-lbl').textContent = doc ? (S.lang === 'ru' ? 'КАРТА' : 'MAP') : (S.lang === 'ru' ? 'ДОК' : 'DOC');
+  if (doc) { lockOff(); closeDossier(); hideTip(); docQ.placeholder = T('search'); buildDoc(); setHashRaw('#doc'); }
+  else { setHashRaw(location.pathname + location.search); }
+  sfx.click();
+}
+$('#btn-mode').onclick = () => setMode(S.mode === 'doc' ? 'map' : 'doc');
+
 /* ---------------- zone tabs ---------------- */
 function buildZoneTabs() {
   $('#zone-tabs').innerHTML = ZONES.map((z, i) => `<button data-z="${z.id}" style="--zc:${z.color}">${z.short}<small>${i + 1}</small></button>`).join('');
@@ -550,12 +611,16 @@ function setLang(l) {
   $('#boot-sub').textContent = T('sub');
   if (search.value.trim().length > 1) doSearch(); else renderDir();
   if (S.hub) { const st = dosBody.scrollTop; openHub(S.hub, null, { silent: true }); dosBody.scrollTop = st; }
+  if (S.mode === 'doc') { const m = $('#doc-main'), st = m.scrollTop; docQ.placeholder = T('search'); $('#mode-lbl').textContent = S.lang === 'ru' ? 'КАРТА' : 'MAP'; buildDoc(); m.scrollTop = st; } else $('#mode-lbl').textContent = S.lang === 'ru' ? 'ДОК' : 'DOC';
   refreshReadStates(); sfx.click();
 }
 
 /* ---------------- hash ---------------- */
 function setHash(h, s) { try { history.replaceState(null, '', h ? `#/${h}${s ? '/' + s : ''}` : location.pathname + location.search); } catch {} }
 function fromHash() {
+  const dm = location.hash.match(/^#doc(?:\/([\w-]+))?/);
+  if (dm) { setMode('doc'); if (dm[1]) setTimeout(() => docGo(dm[1]), 80); return true; }
+  if (S.mode === 'doc' && !location.hash) { setMode('doc'); return true; }
   const m = location.hash.match(/^#\/([\w-]+)(?:\/([\w-]+))?/); if (!m) return false;
   let hub = HUBS.find(h => h.id === m[1]);
   if (!hub && secById[m[1]]) hub = hubBySec[m[1]];
@@ -565,6 +630,9 @@ function fromHash() {
 /* ---------------- keyboard ---------------- */
 addEventListener('keydown', e => {
   if (!S.booted) return;
+  if (e.target === docQ) { if (e.key === 'Escape') { docQ.value = ''; buildDoc(); docQ.blur(); } return; }
+  if ((e.key === 'd' || e.key === 'D' || e.key === 'в' || e.key === 'В') && e.target.tagName !== 'INPUT') { setMode(S.mode === 'doc' ? 'map' : 'doc'); return; }
+  if (S.mode === 'doc') { if (e.key === '/' || e.key === 'f' || e.key === 'F') { e.preventDefault(); docQ.focus(); } return; }
   if (e.target === search) { if (e.key === 'Escape') { search.value = ''; doSearch(); search.blur(); } if (e.key === 'Enter') { const f = dirList.querySelector('[data-sec]'); f && f.click(); } return; }
   if (e.key === 'Tab') { e.preventDefault(); toggleDir(); }
   else if (e.key === 'f' || e.key === 'F' || e.key === '/' || e.key === 'а' || e.key === 'А') { e.preventDefault(); toggleDir(true); setTimeout(() => search.focus(), 30); }

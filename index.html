@@ -31,6 +31,7 @@
 
   <!-- HUD: top right -->
   <div id="hud-actions" class="hud">
+    <button class="hbtn mode" id="btn-mode" title="Document / Map"><svg viewBox="0 0 24 24"><path class="i-doc" d="M6 3h9l4 4v14H6zM14 3v5h5M9 12h7M9 16h7"/><path class="i-map" d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3zM9 3v15M15 6v15"/></svg><span id="mode-lbl">DOC</span></button>
     <button class="hbtn" id="btn-overview" title="Overview"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4zM4 9h16M9 9v10"/></svg></button>
     <button class="hbtn" id="btn-help" title="Help">?</button>
     <button class="hbtn" id="btn-sound" title="Sound"><svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z"/><path class="sw" d="M16 9c1.5 1.5 1.5 4.5 0 6M18.5 6.5c3 3 3 8 0 11"/></svg></button>
@@ -59,6 +60,18 @@
     </div>
     <div id="dos-body" class="scroll"></div>
   </aside>
+
+  <!-- Document mode -->
+  <div id="doc" hidden>
+    <nav id="doc-toc" class="scroll"></nav>
+    <main id="doc-main" class="scroll">
+      <div class="doc-top">
+        <div class="doc-search search"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6"/><path d="M15 15l5 5"/></svg><input id="doc-q" type="search" autocomplete="off" spellcheck="false"></div>
+        <span class="dim" id="doc-count"></span>
+      </div>
+      <div id="doc-body"></div>
+    </main>
+  </div>
 
   <!-- Tooltip -->
   <div id="tip" class="hud"></div>
@@ -98,6 +111,7 @@
 <script src="js/data.js"></script>
 <script src="js/config.js"></script>
 <script src="js/layout.js"></script>
+<script src="js/memes.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>
