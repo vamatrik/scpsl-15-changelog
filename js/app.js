@@ -14,9 +14,9 @@ const store = (() => { try { return JSON.parse(localStorage.getItem('scpsl15') |
 const S = {
   lang: store.lang || ((navigator.language || '').startsWith('ru') ? 'ru' : 'en'),
   read: new Set(store.read || []), sound: store.sound !== false, follow: store.follow !== false && !isTouch,
-  ap: 0, tier: 1, hub: null, booted: false
+  ap: 0, tier: 1, hub: null, booted: false, sens: +store.sens || 1
 };
-const save = () => { try { localStorage.setItem('scpsl15', JSON.stringify({ lang: S.lang, read: [...S.read], sound: S.sound, follow: S.follow })); } catch {} };
+const save = () => { try { localStorage.setItem('scpsl15', JSON.stringify({ lang: S.lang, read: [...S.read], sound: S.sound, follow: S.follow, sens: S.sens })); } catch {} };
 const T = k => UI[S.lang][k];
 
 const secById = Object.fromEntries(SECS.map(s => [s.id, s]));
@@ -205,9 +205,11 @@ function focusPoint(x, y, z) {
 }
 function focusZone(id) { const b = ZB[id]; fitBox(b.x0, b.y0 - 50, b.x1, b.y1, 20); setZoneTab(id); }
 function clampCam() {
-  const m = 200, minX = C.W - WORLD.w * C.tz - m, minY = C.H - WORLD.h * C.tz - m;
-  if (WORLD.w * C.tz + m * 2 > C.W) C.tx = Math.min(m, Math.max(minX, C.tx));
-  if (WORLD.h * C.tz + m * 2 > C.H) C.ty = Math.min(m, Math.max(minY, C.ty));
+  // any point of the facility can be brought under the reticle / screen centre — no invisible walls
+  const cx = dirW() + (C.W - panelW() - dirW()) / 2, cy = C.H / 2, b = Object.values(ZB);
+  const x0 = Math.min(...b.map(v => v.x0)), x1 = Math.max(...b.map(v => v.x1)), y0 = Math.min(...b.map(v => v.y0)) - 60, y1 = Math.max(...b.map(v => v.y1));
+  C.tx = Math.min(cx - x0 * C.tz, Math.max(cx - x1 * C.tz, C.tx));
+  C.ty = Math.min(cy - y0 * C.tz, Math.max(cy - y1 * C.tz, C.ty));
 }
 function zoomAt(sx, sy, f) {
   const nz = Math.max(.18, Math.min(3, C.tz * f));
@@ -271,7 +273,7 @@ stage.addEventListener('pointerdown', e => {
 stage.addEventListener('pointermove', e => {
   if (locked) {
     // the map moves exactly as far as the mouse does — like SCP-079's map
-    const dx = e.movementX || 0, dy = e.movementY || 0;
+    const dx = (e.movementX || 0) * S.sens, dy = (e.movementY || 0) * S.sens;
     C.tx -= dx; C.ty -= dy; C.x -= dx; C.y -= dy; clampCam(); C.x = C.tx; C.y = C.ty;
     hoverPoint(); return;
   }
@@ -523,7 +525,11 @@ const showHelp = () => openModal(`<h2>${T('help')}</h2><div class="help">${T('he
 $('#btn-overview').onclick = showOverview; $('#btn-help').onclick = showHelp;
 $('#btn-sound').onclick = () => { S.sound = !S.sound; save(); applySound(); sfx.click(); };
 const applySound = () => $('#btn-sound').classList.toggle('off', !S.sound);
-const applyFollow = () => { $('#ab-follow').classList.toggle('on', S.follow); document.body.classList.toggle('follow', S.follow && !isTouch); if (!S.follow) lockOff(); placeReticle(); };
+const sensIn = $('#sens'), sensV = $('#sens-v');
+const applySens = () => { sensIn.value = S.sens; sensV.textContent = S.sens.toFixed(2) + 'x'; };
+sensIn.addEventListener('input', () => { S.sens = +sensIn.value; applySens(); save(); });
+sensIn.addEventListener('pointerdown', e => e.stopPropagation());
+const applyFollow = () => { $('#sens-box').hidden = !(S.follow && !isTouch); $('#ab-follow').classList.toggle('on', S.follow); document.body.classList.toggle('follow', S.follow && !isTouch); if (!S.follow) lockOff(); placeReticle(); };
 $('#abilities').addEventListener('click', e => {
   const b = e.target.closest('[data-act]'); if (!b) return; sfx.click();
   ({ dir: () => toggleDir(), search: () => { toggleDir(true); setTimeout(() => search.focus(), 50); }, reset: () => { closeDossier(); overview(); }, follow: () => { S.follow = !S.follow; save(); applyFollow(); } })[b.dataset.act]();
@@ -584,32 +590,37 @@ const BOOT = [
 async function boot() {
   const log = $('#boot-log'); const wait = ms => new Promise(r => setTimeout(r, ms));
   const fast = sessionStorage.getItem('booted');
-  for (const [a, b] of BOOT) {
-    const line = document.createElement('div'); log.appendChild(line);
-    for (const ch of a) { line.textContent += ch; if (!fast && Math.random() < .5) await wait(6); }
-    if (b) { const s = document.createElement('span'); s.className = b === 'OK' ? 'ok' : 'warn'; s.textContent = b; line.appendChild(s); }
-    await wait(fast ? 20 : 140);
-  }
-  $('#boot-choose').classList.add('show');
-  $('#boot-hint').innerHTML = `${esc(UI.ru.boot)} · ${esc(UI.en.boot)}<br><br>${esc(UI[S.lang].disclaimer)}`;
-  document.querySelectorAll('[data-boot]').forEach(b => { if (b.dataset.boot === S.lang) b.focus(); b.onclick = () => start(b.dataset.boot); });
-  const anyKey = e => { if (e.key === 'Tab') return; if (e.key === 'Enter' && document.activeElement.dataset.boot) return; start(S.lang); };
-  addEventListener('keydown', anyKey, { once: true });
+  let skip = false;
   function start(l) {
-    if (S.booted) return; S.booted = true; removeEventListener('keydown', anyKey);
-    audio(); sessionStorage.setItem('booted', '1');
+    if (S.booted) return; S.booted = true; skip = true; removeEventListener('keydown', anyKey);
+    audio(); try { sessionStorage.setItem('booted', '1'); } catch {}
     setLang(l); $('#boot').classList.add('gone'); sfx.tier();
     if (!fromHash()) { C.z = C.tz * .6; overview(); }
     setTimeout(() => toast(T('apStart'), 'warn'), 900);
     setTimeout(() => { if (!S.read.size && innerWidth > 820) toggleDir(true); }, 1600);
   }
+  const anyKey = e => { if (e.key === 'Tab') return; if (e.key === 'Enter' && document.activeElement.dataset.boot) return; start(S.lang); };
+  addEventListener('keydown', anyKey);
+  document.querySelectorAll('[data-boot]').forEach(b => b.onclick = () => start(b.dataset.boot));
+  $('#boot').addEventListener('click', e => { if (!e.target.closest('[data-boot]') && $('#boot-choose').classList.contains('show')) start(S.lang); });
+  $('#boot-hint').innerHTML = `${esc(UI.ru.boot)} · ${esc(UI.en.boot)}<br><br>${esc(UI[S.lang].disclaimer)}`;
+  for (const [a, b] of BOOT) {
+    if (skip) break;
+    const line = document.createElement('div'); log.appendChild(line);
+    for (const ch of a) { line.textContent += ch; if (!fast && !skip && Math.random() < .5) await wait(6); }
+    if (b) { const s = document.createElement('span'); s.className = b === 'OK' ? 'ok' : 'warn'; s.textContent = b; line.appendChild(s); }
+    await wait(fast ? 20 : 140);
+  }
+  $('#boot-choose').classList.add('show');
+  setTimeout(() => { beep(880, .09, 'square', .03); setTimeout(() => beep(1320, .16, 'square', .03), 90); }, 900);
+  const f = document.querySelector(`[data-boot="${S.lang}"]`); if (f && !S.booted) f.focus();
 }
 
 /* ---------------- init ---------------- */
 buildMap(); buildZoneTabs();
 svg.setAttribute('viewBox', `0 0 ${C.W} ${C.H}`);
 S.tier = tierOf(expOf());
-setLang(S.lang); applySound(); applyFollow(); hudEXP(); refreshReadStates();
+setLang(S.lang); applySound(); applySens(); applyFollow(); hudEXP(); refreshReadStates();
 overview(); C.x = C.tx; C.y = C.ty; C.z = C.tz * .7;
 requestAnimationFrame(frame);
 boot();
