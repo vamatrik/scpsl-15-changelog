@@ -222,3 +222,19 @@ body.glitch #stage{animation:glitch .35s steps(3)}
   #cassie{height:26px}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ---------- v2 map: real layout tiles ---------- */
+.room-t image{transition:filter .25s}
+.room-t.named{cursor:help}
+.room-t.named:hover image{filter:brightness(1.6) drop-shadow(0 0 6px rgba(255,255,255,.35))}
+.rlabel{font-family:var(--mono);font-size:13px;fill:#e8f2f5;paint-order:stroke;stroke:#05080a;stroke-width:4px;opacity:0;transition:opacity .3s;pointer-events:none;letter-spacing:.5px}
+#map.lod .rlabel{opacity:.85}
+.link-label{font-family:var(--mono);font-size:12px;letter-spacing:2px;fill:var(--dim)}
+.road{stroke:#9cc9ff;stroke-opacity:.22;stroke-width:26;fill:none}
+.fence-line{stroke:#9cc9ff;stroke-opacity:.5;stroke-width:2;stroke-dasharray:2 8;fill:none}
+.bldg{fill:rgba(156,201,255,.06);stroke-width:2;stroke-dasharray:8 5}
+.hub-hit{fill:transparent}
+.hub .hub-bg{fill:#071016}
+.hub .hub-ring{transform-box:fill-box;transform-origin:center}
+.hub .hub-label{font-size:17px}
+.hub:hover .hub-bg,.hub.active .hub-bg{fill:#14262e}

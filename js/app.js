@@ -46,23 +46,49 @@ const sfx = {
   type: () => beep(1500 + Math.random() * 400, .012, 'square', .008)
 };
 
-/* ---------------- map generation ---------------- */
-const CELL = 120, X0 = 120, PADT = 30;
-const zoneH = z => PADT + z.rows * CELL + 10;
-const WORLD = { w: X0 * 2 + 16 * CELL, h: ZONES[ZONES.length - 1].y + zoneH(ZONES[ZONES.length - 1]) + 40 };
-const cellXY = (z, c, r) => [X0 + c * CELL + CELL / 2, z.y + PADT + r * CELL + CELL / 2];
-const LINKS = [
-  { a: ['surface', 2, 1], b: ['ez', 2, 0], label: 'GATE A' }, { a: ['surface', 14, 1], b: ['ez', 14, 0], label: 'GATE B' },
-  { a: ['ez', 5, 2], b: ['hcz', 5, 0], label: 'CHECKPOINT A' }, { a: ['ez', 11, 2], b: ['hcz', 10, 0], label: 'CHECKPOINT B' },
-  { a: ['hcz', 4, 3], b: ['lcz', 4, 0], label: 'ELEVATOR A' }, { a: ['hcz', 13, 3], b: ['lcz', 13, 0], label: 'ELEVATOR B' }
-];
-function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+/* ---------------- map: real facility layout (14.2.7 room tiles, redesigned) ---------------- */
+const P = 172, TILE = 120, M = 220;
+const LAYOUT = window.CL_LAYOUT;
+const TEXFILE = {
+  LczCurve:'LCZ_Curve',LczStraight:'LCZ_Straight',LczCross:'LCZ_Crossing',LczThreeWay:'LCZ_ThreeWay',Lcz330:'LCZ_330',Lcz914:'LCZ_914',LczAirlock:'LCZ_Airlock',LczArmory:'LCZ_Armory',
+  LczCheckpointB:'LCZ_Checkpoint',LczCheckpointA:'LCZ_Checkpoint',LczClassDSpawn:'LCZ_Long',LczToilets:'LCZ_Toilets',LczComputerRoom:'LCZ_PC15',LczGlassroom:'LCZ_PC15',Lcz173:'LCZ_LargeEnd',LczGreenhouse:'LCZ_Wide',
+  HczCurve:'HCZ_Curve',HczStraight:'HCZ_Straight',HczCross:'HCZ_Crossing',HczThreeWay:'HCZ_ThreeWay',HczCheckpointA:'HCZ_Elevators',HczCheckpointB:'HCZ_Elevators',HczWarhead:'HCZ_Nuke',HczServers:'HCZ_ServerRoom',
+  Hcz939:'HCZ_939',HczTestroom:'HCZ_Testroom',HczTesla:'HCZ_Tesla',HczAcroamaticAbatement:'HCZ_CrossingWater',Hcz106:'HCZ_EndLarge',HczRampTunnel:'HCZ_ThreeWay',Hcz096:'HCZ_EndSmall',HczArmory:'HCZ_Armory',
+  Hcz049:'HCZ_049',HczWaysideIncinerator:'HCZ_Wayside',Hcz079:'HCZ_EndLarge',Hcz127:'HCZ_127',HczMicroHID:'HCZ_Hid',HczCheckpointToEntranceZone:'HCZ_Tesla',HCZ_JunkMain:'HCZ_ThreeWayJunk',HCZ_PipesMain:'HCZ_Straight_Pipe',HCZ_FunnyCorridor:'HCZ_Straight',
+  EzCurve:'EZ_Curve',EzStraight:'EZ_Straight',EzCross:'EZ_Crossing',EzThreeWay:'EZ_ThreeWay',EzEvacShelter:'EZ_NonGateEnd',EzGateA:'EZ_GateA',EzGateB:'EZ_GateB',EzRedRoom:'EZ_NonGateEnd',EzRedroom:'EZ_NonGateEnd',
+  EzOfficeSmall:'EZ_Asymmetric',EzOfficeLarge:'EZ_Thicc',EzOfficeStoried:'EZ_Thicc',EzCollapsedTunnel:'EZ_Collapsed',EzIntercom:'EZ_Intercom',EzCheckpoint:'EZ_Checkpoint'
+};
+const ALIAS = {
+  Lcz330:['SCP-330','SCP-330'],LczCheckpointA:['Лифты A','Elevators A'],LczCheckpointB:['Лифты B','Elevators B'],LczClassDSpawn:['Блок D','Class-D cells'],Lcz914:['SCP-914','SCP-914'],LczToilets:['Туалеты','Toilets'],
+  LczComputerRoom:['PC-15','PC-15'],LczArmory:['Оружейная','Armory'],LczAirlock:['Шлюз','Airlock'],LczGlassroom:['GR-18','GR-18'],Lcz173:['PT-00','PT-00'],LczGreenhouse:['VT-00','VT-00'],
+  HczCheckpointA:['Лифты A','Elevators A'],HczCheckpointB:['Лифты B','Elevators B'],HczWarhead:['Боеголовка','Warhead'],HczServers:['Серверная','Servers'],Hcz939:['SCP-939','SCP-939'],HczTestroom:['Тестовая','Test room'],
+  HczTesla:['Тесла','Tesla'],HczAcroamaticAbatement:['Водопад','Waterfall'],Hcz106:['SCP-106','SCP-106'],HczRampTunnel:['Рампа','Ramp'],Hcz096:['SCP-096','SCP-096'],HczArmory:['Оружейная','Armory'],
+  Hcz049:['SCP-049','SCP-049'],HczWaysideIncinerator:['Мусоросжигатель','Incinerator'],Hcz079:['SCP-079','SCP-079'],Hcz127:['SCP-127','SCP-127'],HczMicroHID:['Micro-HID','Micro-HID'],
+  HczCheckpointToEntranceZone:['КПП','Checkpoint'],EzCheckpoint:['КПП','Checkpoint'],EzEvacShelter:['Убежище','Evac shelter'],EzGateA:['Ворота А','Gate A'],EzGateB:['Ворота Б','Gate B'],EzRedroom:['Красная комната','Red room'],
+  EzOfficeSmall:['Офис (−1 эт.)','Lower office'],EzOfficeLarge:['Компьютерная','Large office'],EzOfficeStoried:['2-эт. офис','Storied office'],EzCollapsedTunnel:['Обвал','Collapsed tunnel'],EzIntercom:['Интерком','Intercom']
+};
+const HUB_ROOM = { c079:'Hcz079', c096:'Hcz096', c106:'Hcz106', c049:'Hcz049', c939:'Hcz939', c127:'Hcz127', microhid:'HczMicroHID', silo:'HczWarhead', servers:'HczServers', 'scp-common':'HczTestroom', 'hcz-rooms':'HczRampTunnel',
+  'ez-gates':'EzGateA', intercom:'EzIntercom', 'ui-room':'EzOfficeLarge', 'ez-offices':'EzOfficeStoried', 'ez-maint':'EzCollapsedTunnel', 'signal-953':'EzRedroom',
+  c914:'Lcz914', pt00:'Lcz173', vt01:'LczGreenhouse', armory:'LczArmory', dcells:'LczClassDSpawn', lockers:'LczComputerRoom', elevc:'LczCheckpointA' };
+const ZOFF = { ez: [0, -130], hcz: [0, 40], lcz: [240, 40] };
+LAYOUT.forEach(r => { const o = ZOFF[r.z]; r.x = M + r.c * P + P / 2 + o[0]; r.y = M + 230 + r.r * P + P / 2 + o[1]; });
+const ZB = {};
+const bbox = (pts, pad) => ({ x0: Math.min(...pts.map(p => p[0])) - pad, y0: Math.min(...pts.map(p => p[1])) - pad, x1: Math.max(...pts.map(p => p[0])) + pad, y1: Math.max(...pts.map(p => p[1])) + pad });
+['ez', 'hcz', 'lcz'].forEach(z => ZB[z] = bbox(LAYOUT.filter(r => r.z === z).map(r => [r.x, r.y]), P / 2 + 22));
+const roomBy = name => LAYOUT.find(r => r.name === name);
+// Surface band above Entrance Zone, aligned to the two gates
+const gA = roomBy('EzGateA'), gB = roomBy('EzGateB');
+const SURF_Y = ZB.ez.y0 - 150;
+const SURF = { 'gate-a': [gA.x, SURF_Y], 'gate-b': [gB.x, SURF_Y], fence: [gA.x - 1.6 * P, SURF_Y - 20], 'surface-yard': [(gA.x + gB.x) / 2, SURF_Y - 60], cassie: [gB.x + 1.7 * P, SURF_Y - 30] };
+ZB.surface = bbox(Object.values(SURF), 110); ZB.surface.x0 = Math.min(ZB.surface.x0, ZB.ez.x0); ZB.surface.x1 = Math.max(ZB.surface.x1, gB.x + 2.6 * P);
+const WORLD = { w: Math.max(...Object.values(ZB).map(b => b.x1)) + M, h: Math.max(...Object.values(ZB).map(b => b.y1)) + M };
+const zoneAt = (x, y) => ZONES.find(z => { const b = ZB[z.id]; return x >= b.x0 - 60 && x <= b.x1 + 60 && y >= b.y0 - 60 && y <= b.y1 + 60; });
 
 const ICONS = {
   gate:'M3 21V7l9-4 9 4v14M7 21v-8h10v8M7 17h10', wire:'M2 8l3 3 3-3 3 3 3-3 3 3 3-3 3 3M2 16l3 3 3-3 3 3 3-3 3 3 3-3 3 3M6 4v16M18 4v16',
   snow:'M12 2v20M3.3 7l17.4 10M3.3 17L20.7 7M9 4l3 3 3-3M9 20l3-3 3 3', speaker:'M4 9h4l5-4v14l-5-4H4zM16 9c1.5 1.5 1.5 4.5 0 6M18.5 6.5c3 3 3 8 0 11',
   gen:'M4 4h16v16H4zM13 7l-4 6h6l-4 6', phone:'M6 3h4l2 5-3 2a11 11 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A17 17 0 0 1 4 5a2 2 0 0 1 2-2',
-  unknown:'M8 8.5a4 4 0 1 1 6 3.5c-1.3.8-2 1.5-2 3M12 19v.5M3 3h4M17 3h4M3 21h4M17 21h4M3 3v4M21 3v4M3 21v-4M21 21v-4', monitor:'M3 4h18v12H3zM8 20h8M12 16v4M7 8l2 2-2 2M11 12h5',
+  unknown:'M8 8.5a4 4 0 1 1 6 3.5c-1.3.8-2 1.5-2 3M12 19v.5', monitor:'M3 4h18v12H3zM8 20h8M12 16v4M7 8l2 2-2 2M11 12h5',
   glass:'M4 4h16v16H4zM4 12l6-3 3 4 7-5M10 9l1 11', wrench:'M15 4a5 5 0 0 0-5 6l-7 7 4 4 7-7a5 5 0 0 0 6-5l-3 3-3-1-1-3z',
   camera:'M3 7h12v10H3zM15 10l6-3v10l-6-3M7 11h.01', nuke:'M12 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4M11 10L8 4.8A8 8 0 0 0 4 12h6M14 12h6a8 8 0 0 0-4-7.2L13 10M13 13.8l3 5.2a8 8 0 0 1-8 0l3-5.2',
   server:'M4 3h16v5H4zM4 10h16v5H4zM4 17h16v4H4zM7 5.5h.01M7 12.5h.01M7 19h.01', eye:'M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6',
@@ -74,99 +100,90 @@ const ICONS = {
   plant:'M12 21V10M12 10C12 6 9 4 5 4c0 4 3 6 7 6zM12 14c0-4 3-6 7-6 0 4-3 6-7 6M7 21h10', card:'M3 6h18v12H3zM3 10h18M6 15h5',
   door:'M5 21V3h14v18M3 21h18M14 12h.01', elevator:'M5 3h14v18H5zM12 3v18M7 11l1.5-2 1.5 2M14 9l1.5 2 1.5-2'
 };
+function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 
 const world = $('#world'), cam = $('#cam'), svg = $('#map');
 const hubEls = {};
 function buildMap() {
-  const defs = $('#defs');
-  defs.innerHTML = '<filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
-  const gZones = svgEl('g', {}, world), gLinks = svgEl('g', {}, world), gHubs = svgEl('g', {}, world);
-  const required = {}; ZONES.forEach(z => required[z.id] = new Set());
-  HUBS.forEach(h => required[h.zone].add(h.c + ',' + h.r));
-  LINKS.forEach(l => { required[l.a[0]].add(l.a[1] + ',' + l.a[2]); required[l.b[0]].add(l.b[1] + ',' + l.b[2]); });
-
+  $('#defs').innerHTML = '<filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>' +
+    '<pattern id="hatch" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M0 0v10" stroke="rgba(156,201,255,.08)" stroke-width="3"/></pattern>';
+  const gFr = svgEl('g', {}, world), gLinks = svgEl('g', {}, world), gCon = svgEl('g', {}, world), gRooms = svgEl('g', {}, world), gLab = svgEl('g', { class: 'rlabels' }, world), gHubs = svgEl('g', {}, world);
+  // zone frames
   ZONES.forEach(z => {
-    const R = rng(z.seed * 977), col = z.color, g = svgEl('g', { 'data-zone': z.id }, gZones);
-    const H = zoneH(z);
-    svgEl('rect', { x: X0 - 40, y: z.y, width: 16 * CELL + 80, height: H, class: 'zone-frame', stroke: col, 'stroke-opacity': .35 }, g);
-    // corner brackets
-    [[X0 - 40, z.y, 1, 1], [X0 + 16 * CELL + 40, z.y, -1, 1], [X0 - 40, z.y + H, 1, -1], [X0 + 16 * CELL + 40, z.y + H, -1, -1]].forEach(([x, y, sx, sy]) =>
-      svgEl('path', { d: `M${x} ${y + 26 * sy}V${y}H${x + 26 * sx}`, stroke: col, 'stroke-width': 3, fill: 'none' }, g));
-    const lab = svgEl('text', { x: X0 - 62, y: z.y + H / 2, class: 'zone-label', fill: col, 'text-anchor': 'middle', transform: `rotate(-90 ${X0 - 62} ${z.y + H / 2})` }, g);
-    lab.textContent = z.short; lab.dataset.zl = z.id;
-    const lab2 = svgEl('text', { x: X0 - 30, y: z.y + 20, class: 'zone-label-sub' }, g); lab2.dataset.zn = z.id;
+    const b = ZB[z.id], col = z.color, g = svgEl('g', {}, gFr);
+    svgEl('rect', { x: b.x0, y: b.y0, width: b.x1 - b.x0, height: b.y1 - b.y0, class: 'zone-frame', stroke: col, 'stroke-opacity': .3, fill: z.id === 'surface' ? 'url(#hatch)' : 'rgba(111,211,255,.012)' }, g);
+    [[b.x0, b.y0, 1, 1], [b.x1, b.y0, -1, 1], [b.x0, b.y1, 1, -1], [b.x1, b.y1, -1, -1]].forEach(([x, y, sx, sy]) =>
+      svgEl('path', { d: `M${x} ${y + 30 * sy}V${y}H${x + 30 * sx}`, stroke: col, 'stroke-width': 3, fill: 'none' }, g));
+    const t1 = svgEl('text', { x: b.x0 + 16, y: b.y0 - 14, class: 'zone-label', fill: col }, g); t1.textContent = z.short;
+    const t2 = svgEl('text', { x: b.x0 + 16 + z.short.length * 22 + 14, y: b.y0 - 16, class: 'zone-label-sub' }, g); t2.dataset.zn = z.id;
+  });
+  // surface: roads + snow
+  const sb = ZB.surface;
+  [gA, gB].forEach(gr => svgEl('path', { d: `M${gr.x} ${SURF_Y + 40}V${ZB.ez.y0 + 10}`, class: 'road' }, gFr));
+  svgEl('path', { d: `M${sb.x0 + 30} ${SURF_Y + 70}H${sb.x1 - 30}`, class: 'road' }, gFr);
+  svgEl('path', { d: `M${sb.x0 + 20} ${sb.y0 + 22}H${sb.x1 - 20}`, class: 'fence-line' }, gFr);
+  const R = rng(99), gs = svgEl('g', {}, gFr);
+  for (let i = 0; i < 110; i++) {
+    const c = svgEl('circle', { cx: sb.x0 + R() * (sb.x1 - sb.x0), cy: sb.y0 + 4, r: .8 + R() * 1.8, class: 'snow' }, gs);
+    c.style.animation = `snow${i % 3} ${6 + R() * 6}s linear ${-R() * 10}s infinite`;
+  }
+  const st = document.createElement('style');
+  st.textContent = [0, 1, 2].map(i => `@keyframes snow${i}{to{transform:translate(${(i - 1) * 40}px,${sb.y1 - sb.y0 - 8}px);opacity:0}}`).join('');
+  document.head.appendChild(st);
 
-    // maze
-    const cells = new Map(); const key = (c, r) => c + ',' + r;
-    for (let r = 0; r < z.rows; r++) for (let c = 0; c < 16; c++) cells.set(key(c, r), { c, r, n: new Set() });
-    const seen = new Set(), stack = [key(0, 0)]; seen.add(key(0, 0));
-    while (stack.length) {
-      const k = stack[stack.length - 1], { c, r } = cells.get(k);
-      const nb = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => key(c + dx, r + dy)).filter(n => cells.has(n) && !seen.has(n));
-      if (!nb.length) { stack.pop(); continue; }
-      const n = nb[Math.floor(R() * nb.length)]; cells.get(k).n.add(n); cells.get(n).n.add(k); seen.add(n); stack.push(n);
-    }
-    const req = required[z.id], target = Math.round(cells.size * (z.id === 'surface' ? .55 : .68));
-    for (let pass = 0; pass < 40 && cells.size > target; pass++) {
-      for (const [k, v] of [...cells]) {
-        if (cells.size <= target) break;
-        if (v.n.size === 1 && !req.has(k) && R() < .5) { const [o] = v.n; cells.get(o).n.delete(k); cells.delete(k); }
-      }
-    }
-    for (const [k, v] of cells) [[1, 0], [0, 1]].forEach(([dx, dy]) => { const o = key(v.c + dx, v.r + dy); if (cells.has(o) && !v.n.has(o) && R() < .14) { v.n.add(o); cells.get(o).n.add(k); } });
-
-    const surface = z.id === 'surface';
-    const gc = svgEl('g', {}, g), gr = svgEl('g', {}, g);
-    for (const [k, v] of cells) for (const o of v.n) if (k < o) {
-      const [x1, y1] = cellXY(z, v.c, v.r), w = cells.get(o), [x2, y2] = cellXY(z, w.c, w.r);
-      svgEl('line', { x1, y1, x2, y2, class: 'corr', stroke: col, 'stroke-opacity': surface ? .1 : .16, 'stroke-width': surface ? 34 : 22 }, gc);
-      svgEl('line', { x1, y1, x2, y2, class: 'corr', stroke: col, 'stroke-opacity': .55, 'stroke-width': 1.5, 'stroke-dasharray': surface ? '10 10' : '' }, gc);
-    }
-    for (const [k, v] of cells) {
-      if (req.has(k) && HUBS.some(h => h.zone === z.id && h.c === v.c && h.r === v.r)) continue;
-      const [x, y] = cellXY(z, v.c, v.r), deg = v.n.size;
-      const dirs = [...v.n].map(o => { const w = cells.get(o); return [w.c - v.c, w.r - v.r]; });
-      const straight = deg === 2 && dirs[0][0] === -dirs[1][0] && dirs[0][1] === -dirs[1][1];
-      let s = deg === 1 ? 56 : straight ? 0 : deg >= 3 ? 40 : 30;
-      if (surface) s = deg === 1 ? 62 : straight ? 0 : 36;
-      if (s) {
-        svgEl('rect', { x: x - s / 2, y: y - s / 2, width: s, height: s, class: 'room', fill: '#0a151a', stroke: col, 'stroke-opacity': .7 }, gr);
-        if (deg === 1) {
-          if (R() < .5) svgEl('rect', { x: x - s / 4, y: y - s / 4, width: s / 2, height: s / 2, class: 'room-deco', stroke: col }, gr);
-          else svgEl('path', { d: `M${x - s / 3} ${y}h${s / 1.5}M${x} ${y - s / 3}v${s / 1.5}`, class: 'room-deco', stroke: col }, gr);
-        }
-      }
-      if (R() < .22) { const cx = x + (R() < .5 ? -1 : 1) * 14, cy = y - 14; svgEl('path', { d: `M${cx - 5} ${cy - 4}l10 4-10 4z`, class: 'cam-ico' }, gr); }
-    }
-    if (surface) {
-      const gs = svgEl('g', {}, g);
-      for (let i = 0; i < 90; i++) {
-        const c = svgEl('circle', { cx: X0 - 30 + R() * (16 * CELL + 60), cy: z.y + 4, r: 1 + R() * 1.8, class: 'snow' }, gs);
-        c.style.animation = `snow${i % 3} ${6 + R() * 6}s linear ${-R() * 10}s infinite`;
-      }
-      const st = document.createElement('style');
-      st.textContent = [0, 1, 2].map(i => `@keyframes snow${i}{to{transform:translate(${(i - 1) * 40}px,${H - 10}px);opacity:0}}`).join('');
-      document.head.appendChild(st);
+  // connectors between neighbouring rooms (same zone, matching doors)
+  const at = {}; LAYOUT.forEach(r => at[r.z + ':' + r.c + ',' + r.r] = r);
+  LAYOUT.forEach(r => {
+    const col = zoneById[r.z].color;
+    [[1, 1, 0, 3], [2, 0, 1, 0]].forEach(([d, dc, dr, od]) => {
+      if (!r.doors.includes(d)) return;
+      const n = at[r.z + ':' + (r.c + dc) + ',' + (r.r + dr)]; if (!n || !n.doors.includes(od)) return;
+      const x1 = r.x + dc * TILE / 2, y1 = r.y + dr * TILE / 2, x2 = n.x - dc * TILE / 2, y2 = n.y - dr * TILE / 2;
+      svgEl('line', { x1, y1, x2, y2, stroke: col, 'stroke-opacity': .22, 'stroke-width': 24 }, gCon);
+      const ox = dr * 12, oy = dc * 12;
+      svgEl('path', { d: `M${x1 - ox} ${y1 - oy}L${x2 - ox} ${y2 - oy}M${x1 + ox} ${y1 + oy}L${x2 + ox} ${y2 + oy}`, stroke: col, 'stroke-width': 1.6, fill: 'none' }, gCon);
+    });
+  });
+  // inter-zone links
+  const pairs = [];
+  const nearest = (a, list) => list.reduce((b, x) => (!b || Math.hypot(x.x - a.x, x.y - a.y) < Math.hypot(b.x - a.x, b.y - a.y)) ? x : b, null);
+  const hk = LAYOUT.filter(r => r.z === 'hcz' && r.name === 'HczCheckpointToEntranceZone'), ek = LAYOUT.filter(r => r.z === 'ez' && r.name === 'EzCheckpoint');
+  hk.forEach(h => pairs.push([h, nearest(h, ek), 'CHECKPOINT']));
+  ['A', 'B'].forEach(k => pairs.push([roomBy('HczCheckpoint' + k), roomBy('LczCheckpoint' + k), 'ELEVATOR ' + k]));
+  pairs.push([gA, { x: SURF['gate-a'][0], y: SURF['gate-a'][1] }, 'GATE A'], [gB, { x: SURF['gate-b'][0], y: SURF['gate-b'][1] }, 'GATE B']);
+  pairs.forEach(([a, b, label]) => {
+    if (!a || !b) return;
+    const dx = b.x - a.x, dy = b.y - a.y, k = Math.abs(dx) > Math.abs(dy);
+    const d = k ? `M${a.x} ${a.y}C${a.x + dx * .5} ${a.y},${b.x - dx * .5} ${b.y},${b.x} ${b.y}` : `M${a.x} ${a.y}C${a.x} ${a.y + dy * .5},${b.x} ${b.y - dy * .5},${b.x} ${b.y}`;
+    svgEl('path', { d, class: 'link-v', stroke: '#cfe3ea' }, gLinks);
+    const t = svgEl('text', { x: (a.x + b.x) / 2 + 10, y: (a.y + b.y) / 2 - 8, class: 'link-label' }, gLinks); t.textContent = label;
+  });
+  // rooms
+  const hubRoom = {}; Object.entries(HUB_ROOM).forEach(([h, n]) => hubRoom[n] = h);
+  LAYOUT.forEach(r => {
+    const f = TEXFILE[r.key]; if (!f) return;
+    const g = svgEl('g', { class: 'room-t' + (ALIAS[r.name] ? ' named' : ''), transform: `translate(${r.x} ${r.y})` }, gRooms);
+    if (ALIAS[r.name]) g.dataset.room = r.name;
+    svgEl('image', { href: 'img/rooms/' + f + '.png', x: -TILE / 2, y: -TILE / 2, width: TILE, height: TILE, transform: `rotate(${r.rot})`, preserveAspectRatio: 'none' }, g);
+    if (ALIAS[r.name] && !hubRoom[r.name]) {
+      const t = svgEl('text', { x: r.x, y: r.y + 4, class: 'rlabel', 'text-anchor': 'middle' }, gLab); t.dataset.alias = r.name;
     }
   });
-
-  LINKS.forEach(l => {
-    const za = zoneById[l.a[0]], zb = zoneById[l.b[0]];
-    const [x1, y1] = cellXY(za, l.a[1], l.a[2]), [x2, y2] = cellXY(zb, l.b[1], l.b[2]);
-    const my = (y1 + y2) / 2;
-    svgEl('path', { d: `M${x1} ${y1 + 30}V${my}H${x2}V${y2 - 30}`, class: 'link-v', stroke: '#cfe3ea' }, gLinks);
-    const t = svgEl('text', { x: (x1 + x2) / 2 + 8, y: my - 6, class: 'zone-label-sub', 'font-size': 11 }, gLinks); t.textContent = l.label;
-  });
-
+  // hubs
   HUBS.forEach(h => {
-    const z = zoneById[h.zone], [x, y] = cellXY(z, h.c, h.r);
+    const z = zoneById[h.zone];
+    let x, y;
+    if (h.zone === 'surface') [x, y] = SURF[h.id];
+    else { const r = roomBy(HUB_ROOM[h.id]); if (!r) { console.warn('no room for hub', h.id); return; } x = r.x; y = r.y; }
     h.x = x; h.y = y;
-    const g = svgEl('g', { class: 'hub', transform: `translate(${x} ${y})`, 'data-hub': h.id, tabindex: 0, role: 'button' }, gHubs);
-    svgEl('rect', { x: -48, y: -48, width: 96, height: 96, rx: 3, class: 'hub-ring', stroke: z.color }, g);
-    svgEl('rect', { x: -42, y: -42, width: 84, height: 84, rx: 3, class: 'hub-bg', stroke: z.color }, g);
-    svgEl('path', { d: ICONS[h.icon] || ICONS.door, class: 'hub-ico', stroke: z.color, transform: 'translate(-20 -22) scale(1.66)' }, g);
-    const ck = svgEl('text', { x: 28, y: -28, class: 'hub-check' }, g); ck.textContent = '✔';
-    const lb = svgEl('text', { x: 0, y: 66, class: 'hub-label', 'text-anchor': 'middle' }, g); lb.dataset.hl = h.id;
+    const g = svgEl('g', { class: 'hub' + (h.zone === 'surface' ? ' surf' : ''), transform: `translate(${x} ${y})`, 'data-hub': h.id, tabindex: 0, role: 'button' }, gHubs);
+    if (h.zone === 'surface') svgEl('rect', { x: -58, y: -40, width: 116, height: 80, class: 'bldg', stroke: z.color }, g);
+    svgEl('rect', { x: -66, y: -66, width: 132, height: 132, class: 'hub-hit' }, g);
+    svgEl('circle', { r: 34, class: 'hub-ring', stroke: z.color }, g);
+    svgEl('circle', { r: 27, class: 'hub-bg', stroke: z.color }, g);
+    svgEl('path', { d: ICONS[h.icon] || ICONS.door, class: 'hub-ico', stroke: z.color, transform: 'translate(-14.4 -14.4) scale(1.2)' }, g);
+    const ck = svgEl('text', { x: 22, y: -20, class: 'hub-check' }, g); ck.textContent = '✔';
+    const lb = svgEl('text', { x: 0, y: 72, class: 'hub-label', 'text-anchor': 'middle' }, g); lb.dataset.hl = h.id;
     hubEls[h.id] = g;
   });
 }
@@ -186,7 +203,7 @@ function focusPoint(x, y, z) {
   C.tz = z; const W = C.W - panelW() - dirW();
   C.tx = dirW() + W / 2 - x * z; C.ty = (innerWidth > 820 ? C.H / 2 : C.H * .22) - y * z;
 }
-function focusZone(id) { const z = zoneById[id]; fitBox(X0 - 80, z.y - 10, X0 + 16 * CELL + 40, z.y + zoneH(z) + 20, 10); setZoneTab(id); }
+function focusZone(id) { const b = ZB[id]; fitBox(b.x0, b.y0 - 50, b.x1, b.y1, 20); setZoneTab(id); }
 function clampCam() {
   const m = 200, minX = C.W - WORLD.w * C.tz - m, minY = C.H - WORLD.h * C.tz - m;
   if (WORLD.w * C.tz + m * 2 > C.W) C.tx = Math.min(m, Math.max(minX, C.tx));
@@ -205,6 +222,7 @@ function frame(t) {
   const follow = S.follow && !drag.on && !$('#dossier').classList.contains('open') ? 1 : 0;
   C.fx += (follow * -C.mx * 110 - C.fx) * k; C.fy += (follow * -C.my * 80 - C.fy) * k;
   C.z += (C.tz - C.z) * k; C.x += (C.tx - C.x) * k; C.y += (C.ty - C.y) * k;
+  svg.classList.toggle('lod', C.z > .62);
   cam.setAttribute('transform', `translate(${(C.x + C.fx).toFixed(2)} ${(C.y + C.fy).toFixed(2)}) scale(${C.z.toFixed(4)})`);
   const trx = S.follow ? C.my * -2.2 : 0, try_ = S.follow ? C.mx * 3 : 0;
   C.rx += (trx - C.rx) * k; C.ry += (try_ - C.ry) * k;
@@ -214,7 +232,7 @@ function frame(t) {
   if (S.booted && S.ap < maxAP) { S.ap = Math.min(maxAP, S.ap + maxAP / 40 * dt); hudAP(); }
   // coords
   const wx = (C.W / 2 - C.x) / C.z, wy = (C.H / 2 - C.y) / C.z;
-  const zn = ZONES.find(z => wy >= z.y - 30 && wy <= z.y + zoneH(z) + 30);
+  const zn = zoneAt(wx, wy);
   if (zn && zn.id !== lastZoneShown) { lastZoneShown = zn.id; setZoneTab(zn.id, true); }
   $('#coords').innerHTML = `CAM <b>${zn ? zn.short : '--'}-${String(Math.abs(Math.round(wx / 10)) % 1000).padStart(3, '0')}</b> · X ${Math.round(wx)} · Y ${Math.round(wy)} · ZOOM ${C.z.toFixed(2)}x`;
   requestAnimationFrame(frame);
@@ -262,7 +280,12 @@ let hoverHub = null;
 function hoverAt(e) {
   const h = e.target.closest && e.target.closest('.hub');
   if (h !== hoverHub) { hoverHub = h; if (h) sfx.hover(); }
-  if (!h) return hideTip();
+  if (!h) {
+    const rm = e.target.closest && e.target.closest('[data-room]');
+    if (!rm) return hideTip();
+    tip.innerHTML = `<b>${esc(ALIAS[rm.dataset.room][S.lang === 'ru' ? 0 : 1])}</b><span class="dim">${rm.dataset.room} · 14.2.7</span>`;
+    tip.style.left = Math.min(e.clientX + 16, C.W - 300) + 'px'; tip.style.top = (e.clientY + 16) + 'px'; tip.classList.add('show'); return;
+  }
   const hub = HUBS.find(x => x.id === h.dataset.hub);
   const n = hub.secs.length, rd = hub.secs.filter(s => S.read.has(s)).length;
   tip.innerHTML = `<b>${esc(hub.t[S.lang])}</b>${hub.secs.map(s => '· ' + esc(secById[s].t[S.lang])).join('<br>')}<div class="dim" style="margin-top:4px">${rd}/${n} ${T('read')}</div>`;
@@ -486,6 +509,7 @@ function setLang(l) {
   $('#ui-dir').textContent = T('dir'); $('#ui-dir2').textContent = T('dir'); $('#ui-progress').textContent = T('progress');
   search.placeholder = T('search'); document.title = T('title');
   document.querySelectorAll('[data-hl]').forEach(t => t.textContent = HUBS.find(h => h.id === t.dataset.hl).t[l]);
+  document.querySelectorAll('[data-alias]').forEach(t => t.textContent = ALIAS[t.dataset.alias][l === 'ru' ? 0 : 1]);
   document.querySelectorAll('[data-zn]').forEach(t => t.textContent = zoneById[t.dataset.zn][l]);
   const ticker = window.CL_CASSIE[l]; $('#cassie-text').textContent = ticker.join('   ///   ');
   $('#boot-sub').textContent = T('sub');
