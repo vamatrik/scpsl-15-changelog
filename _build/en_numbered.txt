@@ -1,0 +1,685 @@
+## Disclaimer
+1|Features may not be properly documented nor summarized yet.
+2|Features may be subject to change or to be completely removed.
+3|This is a public document and may be shared with any members of the community.
+## Gameplay
+4|Slightly altered and slightly increased the size of hitboxes on all human classes.
+5|Sneak speed for all human classes increased to 2.3 m/s (from 1.6).
+6|Improved human "landing" animations.
+7|This is the animation that plays after a human jumps, then touches the ground.
+8|Scientists now only spawn in LCZ Checkpoints.
+9|One Facility Guard spawn is replaced with a Scientist spawn in the default spawn queue.
+10|This replaces the third player spawned in the round (that is currently spawned as a Guard) with a Scientist spawn.
+11|Chaos Insurgents now share the same footsteps audio range as NTF.
+12|Mini-wave spawn counts are now equal to 25% of the server’s population (from 20%).
+13|This means an additional player should spawn in each mini wave on 25 player servers.
+14|The winner of the round is now purely decided based on the last team standing.
+15|Civilian escapes no longer have an affect on win conditions
+16|Stalemates still exist as a failsafe.
+17|"Forget About Your Fears" is now louder and starts playing almost immediately when a human is the last one alive.
+18|Greatly improved performance of breaking glass particles.
+19|Slightly expanded the framework for facial expressions.
+20|Humans will change facial expressions when being grappled or having their eyes severed.
+21|Ragdolls will retain the previous facial expression of the player, slowly transitioning to a random death pose.
+22|Dying from SCP-173 or bleeding from severed eyes uses a custom expression.
+## All SCPs
+23|SCP hit animations will now play even if it doesn't deal any damage.
+24|This is specifically noticeable on SCP-939.
+25|SCP-106, SCP-173, and SCP-939 now have a new standard SCP head height of 1.95 meters.
+26|For reference, human head height is 1.8 meters and flamingo height is 1.2 meters.
+27|Dead Man Switch percentage health regen is now based on how many main spawn waves have spawned. Each wave spawned increases the percentage healed by 7.5%:
+28|Zero waves spawned results in a 0% heal.
+29|One wave spawned results in a 7.5% heal.
+30|Note: The above two should never happen naturally, but exist as a failsafe.
+31|Two waves spawned results in a 15% heal.
+32|Three waves spawned results in a 22.5% heal.
+33|Four waves spawned results in a 30% heal.
+34|The flat 250 HP heal is unaffected.
+35|Dead Man Switch activation countdown is now paused while the Alpha Warhead is actively detonating.
+36|Added a teammate outline to all SCPs within ~75 meter radius.
+37|The radius should be enough to see each other on opposite sides of a zone.
+38|This doesn't apply to SCP-079, who doesn't see its teammate's outlines.
+39|One minute after the Alpha Warhead's detonation, all living humans will become outlined red, and through the walls to the entire SCP team within a ~90 meters radius.
+40|This lasts until the end of the round.
+41|SCP Abilities (and their keybinds) are now displayed on their HUDs.
+42|Read more below, under "UI Changes".
+## SCP-953
+43|Added a new playable anomaly: SCP-953.
+44|SCP-953 specializes in deception and disruption. By utilising her abilities, she can integrate into groups, switch forms to adapt to new situations, and then unleash her powerful offensive abilities when revealed.
+45|SCP-953’s abilities rely on Essence: a resource that is generated while being near, or taking damage from humans.
+46|Upon reaching 50% Essence, SCP-953 can reveal itself.
+47|SCP-953 begins the round in a disguised state amongst human classes.
+48|It cannot regenerate Essence for the first 90 seconds of the game, meaning it is unable to reveal itself for that time.
+49|SCP-953 is given access to a disguise menu, where it can select between multiple forms or reveal itself.
+50|Upon reaching sufficient Essence, SCP-953 can use the Bewitch ability to violently reveal itself and inflict nearby humans with Hexed.
+51|Hexed is a new status effect that disorients its victims and makes them more vulnerable to SCP-953’s attacks.
+52|When revealed, SCP-953 gains access to its offensive abilities.
+53|It can rapidly slash at nearby humans to regain Essence.
+54|SCP-953 can transition into a quadrupedal state that gives it enhanced mobility and an alternate attack: Pounce.
+55|Pounce must be charged and deals severe damage alongside rewarding SCP-953 with shield upon a successful hit.
+56|Hitting Hexed targets with Pounce will Grapple them, allowing you to drag them around and then execute them.
+57|SCP-953 has finally arrived in a playable form. She will be iterated on throughout the beta with her art and audio passes being completed as time goes on. Please let us know what you think of her, as your feedback will be essential in making any adjustments!
+## SCP-079
+58|Tuned down the intensity of SCP-079 audio filters to make users more intelligible.
+59|Increased Tier-2 EXP requirement to 100 EXP (from 80).
+60|Increased Tier-3 EXP requirement to 170 EXP (from 130).
+61|In total 079 needs 270 EXP (from 210) to get to Tier-3.
+62|This means it needs to assist in the termination of at least 9 civilians/guards compared to the current 7.
+63|Now starts the game with 0 AP.
+64|AP regen is now overhauled. 079 now regenerates proportionally to its max AP, so it will always take 40 seconds to regenerate to full AP from 0 across all tiers. Maximum AP values have also been increased to compensate.
+65|Tier 1 AP: 100 max; 2.5/s regen.
+66|Tier 2 AP: 120 max; 3/s regen
+67|Tier 3 AP: 140 max; 3.5/s regen
+68|Tier 4 AP: 160 max; 4/s regen.
+69|Tier 5 AP: 200 max; 5/s regen.
+70|Door locking a closed door now has a base AP drain rate of 10 AP/s.
+71|This is on top of the exponential AP drain.
+72|Door locking cooldown increase per second locked is now 2.5s per second locked (from 0.5s).
+73|The base cooldown of 3 seconds is unchanged.
+74|Lockdown cost increased to 120 (from 100).
+75|Lockdown now pauses regen on Tier 5 instead of just halving it.
+76|Default door interaction cost increased to 10 AP (from 5).
+77|Speakers no longer halve regeneration while in use.
+78|Added icons to SCP-079's map for generators.
+79|This icon is placed based on the generator's position on the map. Similar to player indicators.
+80|Lockdown is no longer available on Surface Zone.
+81|SCP-079 will now be able to survive the Alpha Warhead detonation if it has reached Access Tier 5 and at least one SCP teammate remains post-detonation.
+82|It will be locked to the Surface Zone cameras exclusively, and its map will only display Surface Zone.
+83|If no SCP teammates survive the detonation, SCP-079 will still be terminated.
+84|SCP-079 was largely absent from all the balance changes done in the 14.0 development cycle. In this pass, we have focused on further emphasising resource management within its kit. SCP-079 players should now, ideally, have to think more about how they save and spend their Auxiliary Power. These changes are experimental, so do let us know how you feel about them in practice.
+## SCP-096
+85|Now has a new damage hitbox that is accurate to its model.
+86|SCP-096's hitboxes now increase in size by 1.5x when Enraged.
+87|This is done to compensate for its new tighter hitbox.
+88|Dev Note: The old hitbox was much larger than necessary and made SCP-096 take much more damage than other SCPs.
+89|As a result of the above change, 096’s HP has been reverted back to 2500 (from 3000).
+90|Increased Melee Attack cooldown to 0.6 seconds (from 0.5).
+91|SCP-096 now has a special camera height of 2.1 meters.
+92|Slightly adjusted scaling of 096's volume over distance.
+## SCP-106
+93|Corroding no longer pauses stamina.
+94|Corroding now has a vignette to indicate that it is active.
+95|Note: This also applies to Pocket Corroding.
+96|Corroded victims can now be seen outlined by SCP-106.
+97|Within a 25 meter range.
+98|Colored dark purple.
+99|Fades over distance, can't be seen through walls.
+100|Traumatized victims can now be seen outlined by SCP-106.
+101|Within a 30 meter range.
+102|Colored cyan.
+103|Can be seen through walls.
+104|Overrides other outlines.
+105|SCP-106 can no longer be flashed while stalking.
+## SCP-049
+106|Cardiac Arrest victims can now be seen outlined by SCP-049.
+107|Within a 25 meter range.
+108|Colored purple.
+109|Fades over distance, can't be seen through walls.
+## SCP-049-2
+110|Bloodlust now begins building up speed 0.3 seconds after spotting a human (from 1 second).
+111|Bloodlust now increases speed by 0.125 m/s per tick (from 0.05).
+112|In exchange it also decays faster at a rate of 0.25 m/s (from 0.1).
+113|Slightly increased the size of SCP-049-2's head hitbox.
+## SCP-173
+114|Raised model slightly to fix it clipping into the ground.
+## SCP-939
+115|Reduced Claw range to 1.54 meters (from 1.8).
+116|Decreased 939’s attack delay to 0.15s (from 0.25s).
+117|Note: The attack delay is separate from the attack cooldown. The delay measures the time it takes for the shot to land after pressing M1.
+118|If a player moves into an Amnestic Cloud created by SCP-939, any outlines that they could see are removed for the duration they are afflicted with the Amnesia status effect.
+119|Made the following Environmental Mimicry sounds more accurate to their actual counterparts:
+120|All Firearms
+121|SCP-049 Footsteps
+122|SCP-096 Crying
+123|SCP-106 Footsteps
+124|SCP-939 Footsteps
+125|Chaos Insurgency Footsteps
+126|NTF Footsteps
+127|SCP-079’s Mimicry is now that of an HCZ Door opening or closing.
+128|Firearm Mimicry sounds now lasts longer.
+129|Mimic Points can now be placed and destroyed by clicking M2.
+130|SCP-939 can now interact with the intercom system.
+131|Using a voice line triggers the intercom.
+132|Not using a voice chat for 3 seconds or walking away cancels the transmission.
+133|SCP-939 now plays the Claw animation when swinging regardless of whether it hit something.
+## Items
+134|All human classes can see a small outline of the item they are attempting to pick up.
+135|This can be disabled with the new Pickup Outlines video setting.
+136|Added SCP-018 inspect animation & sound effect.
+137|Flashbangs can no longer apply the Flashed effect if the player already has the effect.
+138|Cards now have a short description of their purposes underneath each of their inventory names like in PEARS 5:
+139|Janitor Card - Opens SCP-914.
+140|Scientist Card - Opens SCP Containment Chambers.
+141|Zone Manager Card - Opens Checkpoints and SCP-914.
+142|Research Supervisor Card - Opens SCP Item Pedestals and Checkpoints.
+143|Facility Manager Card - Opens SCP Weapon Lockers and Warhead Panel.
+144|Facility Guard Card - General Low Tier Access.
+145|NTF Operative Card - General Access.
+146|Chaos Insurgency Card - General and Experimental Weapon Access.
+147|NTF Captain Card - General and Experimental Weapon Access.
+148|Radio now has only 2 frequency ranges: Short and Long.
+149|Radio volume can now be adjusted by scrolling the mouse wheel while holding a radio.
+150|You can also adjust this on the user settings in the menu.
+151|Default SCP item inventory limit reduced to two (from three).
+## Anti-SCP-207
+152|Putting SCP-207 on 1:1 now only has a 50% chance to produce Anti-SCP-207.
+153|The other 50% chance it will be destroyed.
+154|Spawn chance per round increased to 25% (from 15%).
+155|Anti-SCP-207 now only regenerates up to 40 AHP (from 75).
+156|Anti-SCP-207 now has a new weapon handling and item usage debuff which makes actions more sluggish:
+157|Medical item usage time is now 25% slower.
+158|Draw time on firearms and medical items is now 20% slower.
+159|Reload time is now 30% slower.
+160|ADS enter/exit time is now 20% slower.
+161|The Anti-SCP-207 and SCP-207 explosion delay is decreased to 0.3 seconds (from 1.05s).
+162|Significantly increased the volume of the death-save audio.
+163|Anti-Cola has proved itself to be a troublesome item to play against. We are moderately curbing its tankiness while also introducing a new downside to make the user worse in sustained engagements. On top of that, we are also adjusting its accessibility.
+## SCP-1344
+164|Players that are considered standing-still will no longer produce an orb to the 1344 user.
+165|The player must not have moved in the past two seconds.
+166|Note: This is accomplished via a similar system used to determine if 106 is moving with Vigor regeneration: if the player stays within a small radius for two seconds they are considered not moving.
+167|If the player has been standing still for more than 30 seconds, they will produce an orb again.
+168|Updated the inventory description to match this change.
+## Weapons
+169|Added the ability to copy & paste attachment codes inside (and outside!) of the game.
+170|You can do this by using the new buttons on in-game Workstations.
+171|Revamped scopes across all firearms:
+172|Sniper Scopes now zoom in 3.5x (from 6.0x).
+173|Night Vision Scopes now zoom in 2.0x (from 1.0x).
+174|Night Vision Scope visual effects are now less desaturated and dark.
+175|Reduced intensity of Sniper Scope post processing.
+176|Scopes now take up a greater amount of the player’s screen.
+177|Scopes have their recoil animation on each shot significantly reduced.
+178|On the E11-SR and AK, the Sniper Scope will reduce ADS recoil by 5%.
+179|All Sniper Scopes now increase time to ADS by +30% (same as the E11-SR’s).
+180|Sniper Scopes on Rifles now weigh more.
+181|Reduced intensity of ADS recoil animations on each shot for each firearm.
+182|Note: LMGs still have significant shaking.
+183|Decreased ADS recoil reduction for the Logicer, FR-MG-0, Shotgun, and Crossvec.
+184|Dot Sights across all guns are now equivalent to Holo Sight weights.
+185|Reduced ADS head bobbing across all guns.
+186|Inaccuracy gained when jumping increased to +7° (from +3°).
+187|We have decided to try and make firearm scopes easier and more practical to use. We hope that these changes, alongside other improvements done to aiming, will make aiming down sights a more viable, niche alternative to hip-fire playstyles without nerfing hip-firing in the process.
+## Firearm Clutter
+188|Firearms will now drop additional visual clutter during gameplay:
+189|Repeaters with detachable magazines now drop them during combat reload.
+190|Revolver drops the speedloader during any reload animation which involves using it.
+191|Pumping the Shotgun ejects the empty shells.
+192|Disruptor ejects the battery during reload. If the reload is interrupted by dropping/holstering it, it won't drop another battery until it is fired again.
+193|This is a small visual detail, not intended to affect balance, so it contains several limitations for the sake of keeping things optimized:
+194|Similar to bullet holes and blood decals, storage is handled client-side. As a result:
+195|Physics is not synchronized between players. That means clutter can bounce in random directions and end up landing in slightly different locations for different players.
+196|Joining the server mid-round won't cause the previously dropped clutter to appear.
+197|There is a soft limit of 25 instances, shared by all kinds of dropped clutter. If the number of instances exceeds that limit, the oldest instance begins to decay (fade away into transparency over the course of a few seconds).
+198|The same decay happens to instances that have existed for longer than two minutes, even if the soft limit has not been reached.
+## Shotgun
+199|Total pellet fired count increased to 13 (from 12); maximum pellets that can hit increased to 9 (from 8).
+200|Due to this, individual pellet damage has been reduced to 9.1 (from 11.3). This results in a total damage of 91 (from 90.4).
+201|In accordance with the above change, Double Shot pellet count increased to 10 (from eight).
+202|Base penetration increased to 50% (from 40%).
+203|Due to this Extended Barrel penetration bonus reduced to +30% (from +50%).
+204|Damage falloff now starts at 11 meters (from 3.64).
+205|Widened pellet spread but reduced base pellet randomness.
+206|Increased vertical recoil.
+207|Made the predefined pellet spread pattern more uniform.
+208|Revamped how hitmarkers on the Shotgun function:
+209|The player will always receive a hitmarker regardless of the amount of pellets that land.
+210|The hitmarker scales in size with each pellet that lands.
+211|If all pellets that are able to deal damage land, the player receives an extra-large hitmarker.
+212|Made the pumping animation slightly faster.
+213|The Shotgun has received many adjustments to try and make the weapon more consistent and powerful within individual hallways. Like some other tweaks included, it is experimental and highly subject to change.
+## AK
+214|Reduced and simplified horizontal recoil.
+215|Increased vertical recoil kick.
+216|Reduced recoil increase from the Muzzle Booster to +17.5% (from +25%).
+## FSP-9
+217|Significantly reduced draw time penalty for both the Grip and Stock attachments.
+## Revolver
+218|Buckshot round attachment damage falloff now starts at 10 meters (from 3.5).
+219|It falls off until 50 meters (from 45).
+220|Decreased overall pellet spread.
+## E11-SR
+221|Slightly increased vertical recoil.
+## Crossvec
+222|Crossvec retracted stock attachment now gives +25% hip-fire accuracy.
+223|In exchange the ADS recoil penalty on the attachment is now +60% (from +50%).
+## SCP-127
+224|Reduced maximum ammo capacity to 50 (from 60).
+225|Ammo regen delay is now consistently two seconds across all tiers.
+226|Ammo bonus on kill reduced to +10 (from +15).
+## SCP-1509
+227|Attack cooldown increased to 0.66s (from 0.6s).
+228|Secondary target damage reduced to 20 (from 25).
+229|Blurred duration for revived players decreased to one second (from three).
+230|Revived player maximum HP reduction removed, meaning they now spawn with a full 100 maximum HP (from 75).
+231|The lower cap on AHP is still retained.
+## Micro-HID
+232|Increased the thickness of the Primary Fire beam to 0.55 meters (from 0.2 meters).
+233|For reference, the Charge Fire beam is 0.65 meters in thickness.
+234|Primary Fire mode range increased to seven meters (from six).
+235|Changed explosion visuals of players dying by Micro-HID overcharge to more closely match our original vision.
+236|The Micro-HID now grants large hitmarkers when successfully hitting targets.
+## Jailbird
+237|Charge wind-up audio radius increased by 2.0x.
+## Particle Disruptor
+238|Moved Particle Disruptor's ammo warning message on 4th shot.
+239|This warning is now also positioned lower, and more transparent for easier aiming.
+240|Particle Disruptor now also remembers its firing state when dropped.
+241|The text on the Particle Disruptor's display is now translatable.
+## UI Changes
+## Main Menu
+242|Introduced a completely new design for the Main Menu.
+243|Note: For now, the Operational Guide will be disabled until it is properly reimplemented.
+244|Implemented a new main menu background and transition system, cycling between different rooms.
+## News
+245|News now are formatted with their own custom heading and styling.
+246|These are generated automatically by translating Steam's BBCode into our own styling.
+247|You can now see an announcement's thumbnail when sorting through news.
+248|There is now a sorting dropdown, allowing you to decide how news should be sorted.
+249|There is now a Copy Link, and Open in Browser buttons at the bottom left.
+250|URLs inside news/announcements in the News tab on the main menu are now clickable.
+251|Both Steam [url][/url] and raw https:// links are supported.
+252|Social Media buttons are now present at the bottom right of the news menu.
+253|Images will now be loaded into the news reader.
+## ESC Menu
+254|The In-game/ESC Menu now utilizes the visual design of the Main Menu.
+## SCP Ability HUD
+255|Implemented a new unified ability framework for SCPs.
+256|Each playable SCP has received overhauled ability indicators.
+257|These indicators are placed at the bottom right of the screen, and display each of the SCP’s available abilities.
+258|The keys associated with each ability are shown underneath their icons.
+259|Ability cooldowns and duration are also visible when active.
+## Dialogs
+260|Added a new hint system that utilizes new dialog boxes.
+261|Dialogs appear in the form of large or small dialogs.
+262|Large dialog boxes contain larger sets of information, and can be dismissed early by pressing B.
+263|Small dialog boxes are briefer and relate to controls, and can be dismissed early by performing the action described.
+264|Each role has its own defined set of hints designed to help teach newer players.
+265|Players can also receive hints upon death, giving advice on what killed them.
+266|Hints can be disabled or enabled in the settings.
+267|At the time of the beta release, there is a limited selection of hints. More hints will be added as time progresses.
+## Map Changes
+268|Slightly increased the amount of misc locker and medical locker spawns.
+269|SCP Pedestals have been visually revamped.
+270|Using elevators that travel between different zones comes with a smoother transition between the two post-processing effects.
+## Surface Zone
+271|Overhauled the entire design and visual style of Surface Zone.
+272|Gate-A is designed as a civilian exit, containing two standard elevators that lead to Entrance Zone.
+273|Gate-B is styled as an industrial and cargo area with a large akira elevator.
+274|The level design for Surface Zone has been entirely reworked: featuring new locations and pathways.
+275|Snow is now falling across all of Surface Zone.
+276|The outside world should be far more visible and present than in the old iteration of Surface Zone.
+277|Mountains fill the landscape, and icy roads lead to many civilians' hopeful escape.
+278|Added a new CASSIE section to Surface Zone.
+279|This section is locked behind Tier-3 Administration doors. Once opened, they cannot be closed again.
+280|The Warhead Activation Console is located inside the room.
+281|Added a new door type: the Garage Door, used in various buildings across Surface Zone.
+282|This is a new door type which opens vertically.
+283|Cannot be blown up or destroyed by SCP-096.
+284|SCP-096 can force them open much like gates.
+285|Added new basic door models for buildings across Surface Zone.
+286|Added the Surface Zone emergency backup generator.
+287|This new generator is located in Gate-B, and only becomes unlocked after the Alpha Warhead detonates.
+288|The generator takes 60 seconds to activate, and once activated will recontain SCP-079 and cause a militant wave to respawn in 30 seconds.
+289|This militant wave is aligned with the team that activated it.
+290|The generator timer does not tick back up when it is disabled.
+291|The generator will automatically start counting down 1:30 minutes after the warhead’s detonation.
+292|If the generator is activated via this method, the ensuing militant wave will be composed of NTF by default.
+293|Added metal detectors as a gameplay map feature, currently present in Gate A.
+294|Triggers an alarm sound when metallic items, or specific playable roles (which may carry certain detectable materials) pass through the sensors.
+295|Introduced a new Surface Zone skybox, featuring satellite and star simulation.
+296|Doors on Surface Zone are no longer forced open during (nor after) the Alpha Warhead sequence.
+297|Elevator doors are unaffected by this change and continue to behave as normal.
+298|Because of this, SCP-2176 now works on Surface Zone during (and after) the Alpha Warhead sequence.
+299|Walls in Surface Zone have barbed wire, causing players various debuffs for walking over them:
+300|Decay 10% of their maximum HP per second.
+301|Functions akin to decontamination, and will go through HS/AHP first if the player has any.
+302|Grants a 50% movement speed reduction.
+303|Grants a -100% accuracy modifier.
+304|Disables sprinting and caps how high you can jump.
+305|Prevents the ability to reload.
+## Light Containment Zone
+306|Overhauled SCP-914's containment chamber.
+307|The room is now a straight hallway and contains an elevator as an alternative exit.
+308|SCP-914 is positioned downstairs with a guaranteed Scientist card spawn outside.
+309|Now has a new map icon for SCP-079.
+310|Added a new elevator variant specific to SCP-914.
+311|This elevator appears the same as typical elevators, but automatically returns to the bottom (like the Servers elevator) and is slightly faster.
+312|Made various changes to the PT-00 room:
+313|The security office section of PT-00 is now locked behind a Containment Tier 2 door.
+314|Within the security office, on the desk is a Research Supervisor spawn alongside a single SCP-500 instance.
+315|There is a 50% chance for an additional Research Supervisor to spawn there.
+316|An SCP item pedestal can no longer spawn in the room.
+317|A new office desk is placed in the room where the Zone Manager and COM-15 spawns are relocated to.
+318|Four of the existing LCZ layouts have been replaced with new, slightly larger ones.
+319|A new VT-00 variant now spawns, labeled as "VT-01".
+320|The room appears as the old VT-00 variant with both sides being glass with plants behind them.
+321|VT-01 also has a possible COM-15 spawn on top of the standard VT-00 loot.
+322|No lockers (outside of Pedestals) can spawn in VT-01.
+323|To replace the missing endroom (since SCP-914 is now a straight hallway), Elevator System C has been added.
+324|Elevator-C will be a copy of the existing elevators with the "-C" label.
+325|Due to this, all HCZ layouts have been slightly modified with a new endroom spawn each.
+326|The LCZ Corner and T-Intersection rooms previously present in PEARS 5 are implemented into the live game to enhance loot distribution and variety within LCZ.
+327|Normal Corner and T-Intersections still spawn.
+328|A lot of these changes are inspired from PEARS-5: a test that was hosted earlier in the year that overhauled the early game. While we are still interested in potentially pursuing the early game overhaul in the future, we decided to include some of the smaller, well-received changes in Megapatch III. We hope you enjoy!
+## Entrance Zone
+329|Completely overhauled the Entrance Zone sides of Gate-A and Gate-B.
+330|The rooms now have multiple connections to other rooms.
+331|Gate-B contains a large, industrial akira elevator.
+332|Gate-A contains two standard civilian elevators.
+333|At the time of the beta release, the two rooms are currently in graybox form.
+334|Introduced five new layouts for Entrance Zone to accommodate for the new gates.
+335|For the time being, these layouts exclude all other endrooms aside from the gates due to feasibility issues.
+336|They will be brought back in the future.
+337|Breakable glasses in Entrance Zone now have different default visuals.
+338|Their health has increased from 20 to 100.
+## Heavy Containment Zone
+339|SCP-079 Generators have been visually revamped.
+340|Added six new variants of the Deep Corner room to Heavy Containment Zone.
+341|Each variant is not fully guaranteed to spawn each round.
+342|Made various adjustments and fixes to the Ramp Intersection room:
+343|Added a tarp and fence to the left stairwell to remove a sightline.
+344|Adjusted position of wooden planks.
+345|Adjusted pipes on the wall to block a troublesome sightline.
+346|Fixed issue where locked door would clip into window when opened by ghostlight.
+347|Fixed issue where SCP-079's camera would clip into the wall.
+348|Fixed pixel walk next to stairs with mesh fence.
+349|Adjusted lighting and props in the following rooms:
+350|Tesla Room.
+351|SCP-079's Containment Chamber.
+352|SCP-127's Containment Chamber.
+353|Alpha Warhead Silo.
+354|Increased SCP-079 armory's glass health from 5 to 25 (From 1 hit to roughly ~2 hits).
+355|This is the armored/reinforced window next to the firearms, not the button's glass.
+356|Removed the fence clutter from spawning in SCP-079's room.
+357|This was done to prevent collisions with the Generator that sometimes spawns in it.
+358|The Guard keycard spawn in SCP-049’s sublevel is replaced with a Research Supervisor spawn.
+359|HCZ's Warhead panel has been visually revamped.
+## Usable Phones
+360|Phones spawn in a lot of locations, including all containment chambers and rooms with special points of interest (warhead, labs, etc.).
+361|All roles can make calls by interacting with a phone. When that happens, all phones in the facility will ring at once.
+362|When someone answers the phone, they can talk to each other by simply transmitting on proximity voice. SCPs that don't have proximity voice chat can still listen, but can't transmit.
+363|When someone misses the phone, the phone stops ringing, but they can still join the call by interacting with the phone again.
+364|As with radios and intercom, only voice data is transmitted. Environmental sounds are not recorded.
+365|When the last person in proximity to the phone interacts with it or walks away, the phone will automatically disconnect.
+366|The display on the model lists all connected phones.
+367|SCP-939 interactions:
+368|Recorded player voices can be transmitted through the phone.
+369|This does not affect other mimicry, such as gunshots or footsteps.
+370|SCP-079 interactions:
+371|If the camera is in range of the phone, voice will automatically be picked up by phones without needing to interact. The same applies to hearing players.
+372|If the camera is farther away, interacting with the phone will allow SCP-079 to transmit and hear voice regardless of distance.
+373|Otherwise, pressing the icon is the same as pressing the interact button, like a regular player.
+## Technical Changelog
+## Libraries
+374|IMPORTANT DISCLAIMER: We have moved the majority of our code from the Assembly-CSharp.dll. Read below for more info.
+375|This means that you will need to update your .csproj files to point towards the new files based on what you are accessing.
+376|Moved the game's code into it's own separate assembly: Northwood.SCPSL.
+377|Moved Version, HolidayType, and BuildData to its own separate assembly: Northwood.Versioning.
+378|Various libraries, frameworks, and tools have been given their own assemblies:
+379|HeadlessBuilder.
+380|SteamUtils.
+381|MEC.
+382|LiteNetLib4Mirror.
+383|DiscordGameSDK.
+384|StandardAssets.
+385|Utf8Json.
+386|Upgraded Unity engine version to 6000.4.11f1.
+387|Upgraded NorthwoodLib to the latest build.
+388|Added experimental-optimizations startup argument, which enables various Mono JIT optimizations.
+389|Updated MEC to 3.17.0.
+## System & Engine
+390|Improved load times when running the game from an NVMe SSD drive by using the DirectStorage API.
+391|Implemented a secondary motion framework that supports physics-based movement of character elements such as tails, hair, belts, pouches, carabiners.
+392|The character model animator now supports additional non-humanoid animated bones.
+393|This allows our previously implemented animations (such as SCP-939 spine spikes) to apply their motion correctly.
+394|All human models now share the same Animator avatar definition to avoid cross-rig retargeting.
+395|Refactored AnimatorLayerManager to store layer references in a shared scriptable object, which optimizes instantiation time.
+396|Globally disabled raycasts being able to hit trigger colliders.
+397|Added MultipleDoorController.
+398|These act as one interactable through gameplay, meaning that interacting with it will cause both doors to open, close, lock, unlock, explode and repair.
+399|Optimized Dedicated Server by destroying or ignoring methods which were not necessary to run based on community suggestions.
+400|Culling will now always affect objects beyond 150m from the player regardless of the fog setting.
+401|It'll still respect the fog up to that point though.
+402|Reduced memory allocations caused by the hotkey system.
+403|Added frameworks for self-serializing messages, meaning we can create serializers and deserializers directly within the struct, instead of needing an extension method from a static class.
+404|Implemented new tech which allows us to rotate reflection probe cubemaps.
+405|Updated the hair shader to support softer materials.
+406|Audio effects now use mixer snapshots instead of controlling individual parameters.
+407|This allows for more complex audio processing caused by status effects.
+408|Refactored ServerRoles.NamedColor array into a separate scriptable object and linked it using FastResources.
+409|This reduces instantiation time of the player prefab and makes the color easier to access.
+## API Changes
+410|Registered various networked objects to the list of objects spawnable by the server.
+411|Barbed Wire.
+412|Tesla Gate.
+413|Landline Phones.
+414|Garage Door.
+415|Other miscellaneous doors which were not available until now.
+416|Implemented KillAssistTracker abstract subroutine. Tracks player deaths and invokes a method whenever a kill counts as "assisted".
+417|Most of its logic is stripped directly from SCP-939's Mimicry Recorder, simply abstracted for general use.
+418|SCP-939's Mimicry recorder was moved to utilize this new module.
+419|StandardSubroutine<T>'s T must now be a ISubroutinedRole. This optimizes the GetSubroutine<TSubroutine> call, and makes more sense moving forward.
+420|This change extends to ALL generic classes that derive from this, such as KeySubroutine<T>, ScpAttackAbilityBase<T>, and a few others.
+421|Implemented SmoothBoolean utility script, which is used to change a boolean value over time. You are able to define how long it takes to get to the target boolean value.
+422|You are able to define the transition duration separately per true/false state.
+423|Added KeySyncSubroutine<TRole>, it inherits the KeySubroutine<TRole> class and expands it by automatically synchronizing the IsKeyHeld property value.
+424|PlayerRoleManager now keeps track of the previous role and team. This is done once upon the role being assigned to the player.
+425|These properties can be null, in case of no previous roles existing.
+426|WaveSpawner now uses this system rather than keeping track of the roles itself.
+427|Removed ItemTierFlags in favor of new ItemFlags & ItemRarity.
+428|ItemFlags is used to bundle items together across different categories, items can have any (or no) flags.
+429|Some examples of flags: Lethal, Utility, Consumable, etc.
+430|ItemRarity is used to classify how rare an item is.
+431|Common: The default rarity for all items.
+432|Rare: This is for items which spawn in limited amounts across the facility, or in low amounts through spawn waves.
+433|Unique: This is for items which only spawn once in the Facility, or obtained through very difficult means.
+434|Both of these are now shown when hovering over items in RemoteAdmin.
+435|Rare items are colored purple in RA, Unique items are colored red.
+436|Added MouseLock effect. It locks the mouse movement, but still allows players to move around.
+437|ItemType is now under the InventorySystem.Items namespace.
+438|Renamed IHudScp to IHudRole as to support non-SCP roles utilizing custom HUDs.
+439|Refactored ScpHudBase as to support non-SCP roles utilizing custom HUDs.
+440|HudElementBase is the base of all HUD elements (The HUDs themselves included).
+441|RoleHudElementBase<TRole> is a variant of the above, allowing to store a reference cast to TRole.
+442|ChildHudElementBase<THud, TRole> is a variant of the above, allowing to directly reference the "Main HUD" that owns this element.
+443|MainHudBase<TRole> allows for owning elements, toggling them off when HUD is disabled, and initializing them in the correct order.
+444|ScpHudBase still exists, and inherits MainHudBase<TRole>. Its exclusive benefit is handling the target counter that all SCPs have.
+445|SimpleInspectorModule._isInspecting was removed in favor of directly using SimpleInspectorModule.DisplayInspecting.
+446|Added StatBase.CalculateNormalizedValue method, it calculates the normalized value based on the specified value.
+447|Added StatBase.CalculateValue method, it calculates the value of the stat at the specified normalized value.
+448|Added Inventory.ServerDropItem so you can drop a player's inventory as the server.
+449|The following methods have been made public as to improve dummy controlling support:
+450|DummyKeyEmulator.RemoveEntry.
+451|DummyKeyEmulator.AddEntry.
+452|SubroutineBase.DummyEmulator.
+453|AutoSyncItem.DummyEmulator.
+454|AutoSyncItem.IsEmulatedDummy.
+455|ItemBase.IsDummy.
+456|InteractionCoordinator.ClientInteract.
+457|InteractionCoordinator.GetSafeRule.
+458|Added ability to remove the collider in SCP-096 Chamber by removing the door.
+459|Moved registration of some networked objects away from the NetworkManager prefab to a new dynamic loading system integrated within FastResources.
+460|This shouldn't really suppose a change, but we are mentioning it for those with hack-y solutions.
+461|Removed background from Waiting For Players screen.
+462|Added limit of 100 characters when writing Keycard's Custom Label, Custom Item Name, Custom NameTag.
+463|This was done as large labels could cause server softlocks and/or crashes.
+464|"Command execution failed!" messages are now also logged through Unity's Debug.LogError.
+465|Added ICrossCompatibleModel interface. This allows us to mark models which support compatibility when not used by the appropriate role.
+466|This is specifically used by SCP-953 so models which rely on specific subroutines such as SCP-049-2's can be used safely by her.
+467|Added BlockedInteraction.ItemConsumption restriction.
+468|This allows using items, but not consuming them nor using their effect. For guns, this means being able to shoot them, but not deal damage nor consume ammo.
+469|Some firearms don't fully support the "not consuming ammo" part, we may expand it to all in the future, but we are prioritizing SCP-953's mechanics first.
+470|This doesn't work with all items, as it is currently an exclusive SCP-953 mechanic, it currently only supports the items that SCP-953 is able to grab.
+471|Added StandardSubroutine.ServerSendRpcToView. Simplifies sending the ServerSendRpc to Owner and any current spectators.
+472|The Round's timer is now synchronized from the server to clients.
+473|This is a one-time transaction using a networked timestamp, meaning that it won't affect performance.
+474|The following ScpAttackAbilityBase's properties have been made public:
+475|AttackDelay.
+476|BaseCooldown.
+477|SelfRepeating.
+478|DetectionRadius.
+479|DetectionOffset.
+480|AnimatorLayerManager now contains shortcuts for moving the weight using MoveTowards.
+481|Implemented TryGetFirst utility method for FastResources, or objects that only exist as singletons.
+482|Added IsExcludedFromGameplay to ReferenceHub, which allows for fast checking if the hub belongs to an unauthenticated connection or dedicated server.
+483|Added utility methods for repetitive setting goals and weights of Inverse Kinematics.
+484|ServerDropEverything now contains an optional parameter which allows to populate a list with all pickups that have been created as a result of this method.
+485|Abstracted damage animation effect that was previously used by SCP-939 (twitching animation and grunts of being shot at).
+486|It is now an animator subcontroller so it can be reused by any animated character model.
+487|Added ModelCurveProviderStateMachine StateMachine component, which allows animator states to supply scripts with additional curves.
+488|Added a RoleAssignPriority to spawnpoint handlers, which allows to dictate in which order roles are assigned to players on round start.
+489|Abstracted StatFlasher to support flashing of any PlayerStats sliders.
+490|Subroutines now feature a UniqueHash which is a stable unique identifier of a subroutine within that role, used to access the subroutine across prefabs.
+491|Removed Scp079CurrentCameraSync.CurrentCamera in order to improve support for custom maps.
+492|This means that all occurrences of this have been replaced with TryGetCurrentCamera, which provides a safer option.
+493|Introduced a new struct, PCMData, which is a wrapper for a recyclable sample array and its target length.
+494|All buffers and audio modules use it to pass samples around.
+495|Added PlayerStats.KillPlayer method.
+496|Previously the entire killing logic was inside PlayerStats.DealDamage, this replaces that, and cleanly separates the logic.
+497|Added various verification checks to prevent interacting with lockers through walls.
+498|Added NetworkServer.active check to OnEnable and OnEffectUpdate in Resurrected status effect.
+499|This allows plugins to patch those methods properly without the client overriding the visuals.
+500|Refactored LCZ decontamination to be more server-side, with the server now sending client announcement messages as well as the elapsed time that has passed.
+501|LCZ decontamination is now properly paused when set to disabled.
+502|Unpausing it will resume the timer at which it was before.
+503|Decontamination display animation now updates properly if time is edited via plugins.
+504|Added synchronization for MicroHID movement speed, allowing modders to change it on the server by request.
+505|Plugins should now be able to reset a glass after it was destroyed by changing its IsBroken status.
+506|VoiceModules now set ServerIsSending to true immediately when the CurrentChannel is set.
+507|This fixes the issue of the sender's IsSpeaking property returning false in PlayerReceivingVoiceMessageEvent.
+508|The Channel field in the VoiceMessage in the PlayerSendingVoiceMessageEvent will now be passed to CurrentChannel and ValidateReceive, properly reflecting changes made by plugins.
+509|Changing the voice channel in PlayerSendingVoiceMessageEvent now automatically flows to PlayerReceivingVoiceMessageEvents.
+510|CurrentChannel will no longer be set if the PlayerSendingVoiceMessageEvent is canceled.
+511|Added VisionBlocker layer, which will block SCP-173 and SCP-096 observation mechanics from triggering.
+512|You can walk through it, you can shoot through it, you can throw items through it.
+513|Added ScpOnly, which will block everyone except SCPs from passing through these objects.
+514|You can still shoot and throw items through it as human.
+515|Removed unused min-max random generator.
+516|Moved PlayerLeavingEventArgs event to be invoked from within the CustomNetworkManager.
+517|Added option for server in InteractableToy to differentiate between players search time.
+518|Slight optimizations in the backtracking SCP attack base module.
+519|Tesla Gates no longer deal UniversalDamageHandler.
+520|Instead, a new TeslaDamageHandler class has been added as a replacement.
+521|Tesla Gates now passes a TriggerReason indicating what triggered them.
+522|A TriggerReason.Custom value has been added for plugins to utilize freely.
+523|Removed StructurePositionSync script from all structures.
+524|Added IWarheadImmuneRole, which indicates roles with a conditional immunity to the warhead, such as SCP-079.
+525|Renamed warhead RpcShake to RpcDetonate for better clarity.
+526|Added Scp079Camera.GetZoneCameras, which provides a list of all cameras inside a specified zone.
+527|Optimized coordinate lookup in RoomIdentifier.
+528|Added ItemBase.IsBeingRemoved, set after ItemBase.OnRemoved is called.
+529|PlayerChang(ing/ed)BadgeVisibility now has NewVisibility set to true when showing a tag.
+## Outlines
+530|Added a system to the game that lets you see an outline of specific players or objects locally and sent from the server to clients.
+531|Allows to change Priority, Colour, Thickness, StencilShrink (how sharp the edges should be, with 0 being general object outline), SeeThroughWalls & Fill.
+532|This system uses a custom shader with a custom draw pass to render the top most priority outline for every OutlineEffectController (if it has any active).
+533|Every controller has its own material that lasts for the controller's lifetime, reusing it until the end. All outlines that are considered fully transparent are also not rendered, saving draw calls.
+534|Outlines are objects whose instances belong to single controller. There is a copy constructor, which creates deep copy and increments the ID to a new one, and a clone Clone() method if you create a template, such as one created via Unity serialisation, and then distribute it to all players.
+535|Current system allows creating outlines visible to everyone/specific role(s)/specific team with the exception of role(s).
+536|Outlines also prevent some of the culling of the outline objects, both on the server and client side, to make sure they are visible when they should be through walls.
+537|Outlines on themself cannot be edited in real-time by re-sending data. But there are several modifiers which let you handle these on the client side or send sync values to the client. The current available modifiers are:
+538|DistanceBasedModifier for close and distance fade in and out.
+539|CurveBasedOutlineModifier to change properties over network time via curves.
+540|NetworkedCurveModifier to change the properties via synced float value for evaluation.
+541|PlayerStatOutlineModifier to change properties via automatically synced normalised float value of player's StatBase.
+542|SCP-1507's teammate visibility through walls now utilizes the outlines system instead of its own.
+543|Added outline add and outline remove console commands.
+544|Added Selection-based outline, which allows outline to be visible for specific player(s) only.
+## DisplayKit
+545|Added DisplayKit, a system which allows plugin devs to create Labels/Panels on the player screen.
+546|Added new setting in the Interface category called "Custom DisplayKit Elements" its shown by default but users can hide any elements created by server anytime.
+## Primitive Toys
+547|Added a new PrimitiveToyType enum, this acts as a replacement from Unity's default PrimitiveType.
+548|This was necessary in order to add new entries.
+549|Added new Primitive Toy types based on popular community request:
+550|Cone.
+551|Triangle.
+552|Triangle has multiple subtypes:
+553|Note: "Solid" variants are visible from both sides, while non-solid ones act as a Planes, with only one side visible.
+554|Triangle - An "Equilateral Triangle", all three sides are equal, 60°.
+555|TriangleSolid - A variant of "Triangle" where both sides are visible.
+556|Triangle90 - A "Right Isosceles Triangle", has a right angle (90°), and two equal angles (45°).
+557|Triangle90Solid - A variant of "Triangle90" where both sides are visible.
+## RemoteAdmin & Server Config
+558|Broadcasts will now automatically adjust their vertical position based on whether the Spectator UI is currently visible for spectators.
+559|Added HCZ-EZ Checkpoint B back to Remote Admin's door list.
+560|Added ability to hide Role intro when spawning players through the Role Management window.
+561|You can, of course, replicate this through plugins by using the new RoleSpawnFlags.ShowIntroScreen flag.
+562|warhead_tminus_start_duration config now uses the closest StartScenario.
+563|Filmmaker keyframes now present their stored values in a human-readable form.
+564|Most notably, the rotation is now displayed in euler angles instead of quaternions.
+565|Hovering over items in the RA Items menu now also display said items' flags, as well as their rarity.
+## Fixes
+566|Fixed effect update events not being called when the duration was changed.
+567|Fixed SCP-1344 severing your eyes if dropped before the animation for it actually finished playing.
+568|Fixed SCP-096 being able to break doors while they are open.
+569|Fixed SCP-244 affecting SCP-106 while in Stalking mode.
+570|Fixed spectators being able to hear SCP-939's stolen voicelines.
+571|Fixed issue causing health values to appear at zero (or mismatching) while spectating.
+572|Fixed Human ragdolls not being affected by SeveredHands & SeveredEyes effects.
+573|Fixed issue causing "Press F to deny further resurrection" dialog box to stay open indefinitely when spamming the confirmation key.
+574|Fixed issue allowing melee attacks to hit further away than intended.
+575|Fixed a bug that prevented SCP selection randomization from being applied correctly when too many players had opted out of SCP.
+576|Fixed the neck of ragdolls not rotating after dying to SCP-173.
+577|Fixed being able to hear the Tantrum sound effects at higher distances than intended.
+578|Fixed custom keycard pickups not displaying custom name tags.
+579|Fixed cases where you could sabotage your team as SCP-3114 by shattering SCP-2176.
+580|Fixed grenades using the thrower's armor when calculating damage to its victims.
+581|Fixed SCP-3114 being able to break SCP-079's glass by throwing items.
+582|Fixed Anti-SCP-207's AHP regenerating more than intended preventing death.
+583|Fixed dealing friendly fire damage as SCP-3114 by using snowballs.
+584|Fixed SCP-2176 not locking down doors after the warhead has detonated.
+585|Fixed newly spawned players overwriting the current search coordinator.
+586|Fixed RA REQUEST button bypassing ViewHiddenBadges and ViewHiddenGlobalBadges permissions.
+587|Fixed pauseculling command status not resetting after round restart.
+588|Fixed TX and RX text displays on the Radio's UI being tiny.
+589|Fixed inaccuracies in item viewmodel tracking or camera effects framework.
+590|Fixed camera effects not being respected when it comes to interacting with objects.
+591|Fixed Anti-SCP-207's third person model having a transparent cap.
+592|Fixed Anti-SCP-207's dropped model having a red color cap.
+593|Fixed Anti-SCP-207 not applying the correct weapon debuffs.
+594|Fixed Jailbird ignoring hitmark conditions.
+595|Fixed SCP-1509, Jailbird hitmarkers not showing when hitting non-player objects.
+596|Fixed the HCZ T-Intersection pillars having the incorrect texture.
+597|Fixed the door frames in the upper part of SCP-127's chamber being incorrectly sized.
+598|Fixed Piperoom abusable spot via a pipes collision
+599|Fixed HCZ armory pixel walk on pipes above void.
+600|Fixed the weird floor light in LCZ T-Closet intersections.
+601|Definitively fixed HCZ Testroom pillars collisions on all sides.
+602|Fixed HCZ Testroom death pit being too low to prevent rare waterfall room piece clipping through.
+603|Fixed SCP-106 being able to teleport to SCP-079 containment before its unlocked.
+604|Fixed HCZ-T Pipes intersection abusable spot near locker and the blue foil cover.
+605|Fixed Warhead Silo staircases and firing chamber having no collisions.
+606|Fixed Warhead Silo staircases being misaligned.
+607|Fixed textures on the Warhead Silo firing chamber, staircases, and platform.
+608|Fixed forklift colliders allowing players to jump on wheels and then on the model itself.
+609|Fixed AttachmentParam.PreventReload not working for CustomPlayerEffects.
+610|Fixed exiting TemporaryHazard not triggering Exit methods if the hazard was destroyed via explosion.
+611|Fixed ElevatorChamber._floorDoors not being properly set up if accessed early enough.
+612|Fixed badge being shown even when PlayerInfoArea does not declare badges should be shown.
+613|Fixed exception thrown when ElevatorChamber.CurrentRoom called too early.
+614|Fixed exception thrown and disconnection when AnomalousTarget effect instance is not found.
+615|Fixed exception thrown when plugin set the Player property to null in generator activating.
+616|Fixed exception thrown when SubtitleParts was null.
+617|Fixed exception thrown in QueryProcessor when an unauthenticated players left.
+618|Fixed exception thrown in the client when the player escaped.
+619|Fixed exception thrown by LiteNetLib when client disconnected from the server, or the server refused the connection.
+620|Fixed exception when accessing Player IP address after they left.
+621|Fixed OnScp106TeleportedPlayer being invoked even if the target is the last player alive and therefore instantly killed.
+622|Fixed getting ServerSpawnFlags log error for server-only properties.
+623|Fixed Scp330Bag.ServerProcessPickup bag parameter is null when they don't have a bag.
+624|Fixed wave pause states not resetting across rounds.
+625|Fixed PreviousOwner property not assigned for ammo pickups.
+626|Fixed attacker not being set when a door gets damaged by SCP-1507 or a Particle Disruptor.
+627|Fixed issues where FastResources wouldn't load ScriptableObjects derived from other classes.
+628|Fixed decontamination disable command not working correctly.
+629|Fixed "initialising procedure pb..." text being inside the decon display.
+630|Fixed "please evacuate" text being partially inside the display.
+631|Fixed scale command returning a checkmark even when the command failed.
+632|Fixed CustomFog not having Serializable attribute.
+633|Fixed Skybox prefab using old HolidayMaterialReplacer fileId.
+634|Fixed InventoryExtensions.OnItemRemoved firing twice when jailbird ran out of charges.
+635|Fixed CustomNetworkManager not invoking OnClientStart event when client started.
+636|Fixed Tesla Gate being at 0, 0, 0 when spawned by plugins.
+637|Fixed changescale, setgravity commands not recognizing player names with spaces.

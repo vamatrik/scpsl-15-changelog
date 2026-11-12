@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SCP: SL 15.0 — Changelog Terminal</title>
+<meta name="description" content="Interactive bilingual (RU/EN) viewer for the SCP: Secret Laboratory v15.0.0 Beta changelog, styled as the SCP-079 facility map.">
+<meta name="theme-color" content="#070a0c">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='5' width='26' height='19' rx='2' fill='%23070a0c' stroke='%236fd3ff' stroke-width='2'/%3E%3Ccircle cx='12' cy='14' r='2' fill='%23ffb347'/%3E%3Ccircle cx='20' cy='14' r='2' fill='%23ffb347'/%3E%3Cpath d='M12 27h8' stroke='%236fd3ff' stroke-width='2'/%3E%3C/svg%3E">
+</head>
+<body>
+<div id="app">
+  <!-- MAP -->
+  <div id="stage">
+    <div id="tilt"><svg id="map" xmlns="http://www.w3.org/2000/svg"><defs id="defs"></defs><g id="cam"><g id="world"></g></g></svg></div>
+  </div>
+
+  <!-- HUD: top left (079 status) -->
+  <div id="hud-status" class="hud">
+    <div class="hs-title"><span class="blink">●</span> SCP-079 <span class="dim">//</span> <span id="ui-tier">ACCESS TIER</span> <b id="tier-num">1</b></div>
+    <div class="bar-row"><span class="bar-label" id="ui-ap">AUX</span><div class="bar ap"><i id="ap-fill"></i></div><span class="bar-num" id="ap-num">0/100</span></div>
+    <div class="bar-row"><span class="bar-label" id="ui-exp">EXP</span><div class="bar exp"><i id="exp-fill"></i></div><span class="bar-num" id="exp-num">0/100</span></div>
+  </div>
+
+  <!-- HUD: top center zone selector -->
+  <div id="zone-tabs" class="hud"></div>
+
+  <!-- HUD: top right -->
+  <div id="hud-actions" class="hud">
+    <button class="hbtn" id="btn-overview" title="Overview"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4zM4 9h16M9 9v10"/></svg></button>
+    <button class="hbtn" id="btn-help" title="Help">?</button>
+    <button class="hbtn" id="btn-sound" title="Sound"><svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z"/><path class="sw" d="M16 9c1.5 1.5 1.5 4.5 0 6M18.5 6.5c3 3 3 8 0 11"/></svg></button>
+    <div class="lang" role="group"><button data-lang="ru">RU</button><button data-lang="en">EN</button></div>
+  </div>
+
+  <!-- Directory -->
+  <aside id="dir" class="panel">
+    <div class="dir-head">
+      <div class="panel-title" id="ui-dir">DIRECTORY</div>
+      <button class="xbtn" id="dir-close" aria-label="close">×</button>
+    </div>
+    <div class="search"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6"/><path d="M15 15l5 5"/></svg><input id="search" type="search" autocomplete="off" spellcheck="false"></div>
+    <div class="progress-mini"><span id="ui-progress">Progress</span><div class="bar"><i id="prog-fill"></i></div><span id="prog-num">0%</span></div>
+    <div id="dir-list" class="scroll"></div>
+  </aside>
+  <button id="dir-toggle" class="hud tab-btn"><span>TAB</span> <b id="ui-dir2">DIRECTORY</b></button>
+
+  <!-- Dossier -->
+  <aside id="dossier" class="panel" aria-hidden="true">
+    <div class="dos-head">
+      <div class="dos-meta"><span class="zone-chip" id="dos-zone"></span><span class="dim" id="dos-count"></span></div>
+      <h1 id="dos-title"></h1>
+      <div id="dos-chips" class="chips"></div>
+      <button class="xbtn" id="dos-close" aria-label="close">×</button>
+    </div>
+    <div id="dos-body" class="scroll"></div>
+  </aside>
+
+  <!-- Tooltip -->
+  <div id="tip" class="hud"></div>
+
+  <!-- Bottom: CASSIE ticker -->
+  <div id="cassie" class="hud"><span class="cassie-tag">C.A.S.S.I.E.</span><div class="cassie-track"><span id="cassie-text"></span></div></div>
+
+  <!-- Bottom right: ability HUD -->
+  <div id="abilities" class="hud">
+    <button class="ab" data-act="dir"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg><kbd>TAB</kbd></button>
+    <button class="ab" data-act="search"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6"/><path d="M15 15l5 5"/></svg><kbd>F</kbd></button>
+    <button class="ab" data-act="reset"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><kbd>SPACE</kbd></button>
+    <button class="ab" data-act="follow" id="ab-follow"><svg viewBox="0 0 24 24"><path d="M5 3l12 8-5 1 3 7-2 1-3-7-4 4z"/></svg><kbd>M</kbd></button>
+  </div>
+
+  <div id="coords" class="hud"></div>
+  <div id="toasts"></div>
+
+  <!-- Modal -->
+  <div id="modal" class="modal" hidden><div class="modal-card panel"><button class="xbtn" id="modal-close">×</button><div id="modal-body"></div></div></div>
+
+  <!-- Boot -->
+  <div id="boot">
+    <div class="boot-inner">
+      <pre id="boot-log"></pre>
+      <div id="boot-choose">
+        <div class="boot-title">SCP: SECRET LABORATORY <span>15.0</span></div>
+        <div class="boot-sub" id="boot-sub">CHANGELOG TERMINAL</div>
+        <div class="boot-langs"><button data-boot="ru">РУССКИЙ</button><button data-boot="en">ENGLISH</button></div>
+        <div class="boot-hint" id="boot-hint"></div>
+      </div>
+    </div>
+  </div>
+  <div id="fx-scan"></div><div id="fx-vig"></div>
+</div>
+<script src="js/data.js"></script>
+<script src="js/config.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
